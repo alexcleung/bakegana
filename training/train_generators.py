@@ -15,7 +15,6 @@ def train(
     katakana_classifier: tf.keras.Model,
     train_dataset: tf.data.Dataset,
     val_dataset: tf.data.Dataset,
-    label_mapping: Dict
 ):
     """
     Training script
@@ -246,3 +245,4 @@ def train(
 
     print("Training Complete")
 
+    return hiragana_classifier, katakana_classifier, hiragana_generator, katakana_generator

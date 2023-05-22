@@ -43,7 +43,7 @@ def train(
     loss_fn = tf.keras.losses.get(
         config["classification_loss_fn"]
     )(**config["classification_loss_config"])
-    
+
     hiragana_loss_metric = tf.keras.metrics.get(
         config["classification_loss_fn"]
     )(**config["classification_loss_config"])
@@ -173,23 +173,4 @@ def train(
 
     print("Classifier training complete.")
 
-
-
-    
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    return hiragana_classifier, katakana_classifier

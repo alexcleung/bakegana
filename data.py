@@ -3,7 +3,7 @@ Dataset processing functions
 """
 
 import os
-from typing import List
+from typing import Dict
 
 import tensorflow as tf
 
@@ -59,22 +59,19 @@ def preprocessing(dataset, contrast_factor: float):
 
 
 def create_dataset(
-        data_dir: str, 
-        characters: List[str],
-        image_size: List[int],
-        batch_size: int,
-        contrast_factor: float = 3.0,
-    ):
+    config: Dict
+):
     """
     Create a TF Dataset of images of kana `characters`.
 
-    `data_dir`: Top level directory containing a subdirectory for each
-        hiragana/katakana character. The subdirectories are named using
-        the unicode for each character.
-    `characters`: the romanized character for each kana to be included in
-        in the dataset.
-    `batch_size`: batch size of the dataset
-    `contrast_factor`: contrast to apply on preprocessing.
+    `config` is a dictionary containing:
+        `data_dir`: Top level directory containing a subdirectory for each
+            hiragana/katakana character. The subdirectories are named using
+            the unicode for each character.
+        `characters`: the romanized character for each kana to be included in
+            in the dataset.
+        `batch_size`: batch size of the dataset
+        `contrast_factor`: contrast to apply on preprocessing.
 
     Returns: 
         2 TF Datasets (train and val) that each yield 3 elements:
@@ -84,7 +81,11 @@ def create_dataset(
 
         label mapping: Dictionary mapping integer label to string character.
     """
-    characters = set(characters)
+    data_dir = config["data_dir"]
+    characters = set(config["characters"])
+    image_size = config["image_size"]
+    batch_size = config["batch_size"]
+    contrast_factor = config["contrast_factor"]
 
     for c in characters:
         validate_subdirectories(data_dir, c)
