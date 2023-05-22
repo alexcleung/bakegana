@@ -6,9 +6,10 @@ import argparse
 
 import yaml
 
-from .dataset import create_dataset
-from .training.train_classifiers import train as train_classifiers
-from .training.train_generators import train as train_generators
+from dataset import create_dataset
+from sample_dataset import sample_dataset
+from training.train_classifiers import train as train_classifiers
+from training.train_generators import train as train_generators
 
 if __name__ == "__main__":
     args = argparse.Namespace()
@@ -16,14 +17,16 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--mode",
-        choices=["train", "predict", "generate"]
+        choices=["sample_dataset", "train", "predict", "generate"]
     )
     parser.parse_known_args(namespace=args)
 
     with open("./config.yaml", "r") as stream:
         config = yaml.safe_load(stream)
 
-    if args.mode == "train":
+    if args.mode == "sample_dataset":
+        sample_dataset(config)
+    elif args.mode == "train":
         train_dataset, val_dataset, label_mapping = create_dataset(config)
 
         hiragana_classifier, katakana_classifier = train_classifiers(

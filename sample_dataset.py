@@ -12,6 +12,9 @@ def sample_dataset(config):
     with open("config.yaml", "r") as stream:
         config = yaml.safe_load(stream)
 
+    # override config - only load 4 images for example
+    config["batch_size"] = 4
+        
     train_dataset, val_dataset, label_mapping = create_dataset(config)
     
     for hira, kata, label in train_dataset:
