@@ -6,7 +6,7 @@ import argparse
 
 import yaml
 
-from .data import create_dataset
+from .dataset import create_dataset
 from .training.train_classifiers import train as train_classifiers
 from .training.train_generators import train as train_generators
 
