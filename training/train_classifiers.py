@@ -160,6 +160,11 @@ def train(
         max_to_keep=1
     )
 
+    if hiragana_ckpt_mgr.latest_checkpoint:
+        hiragana_ckpt.restore(hiragana_ckpt_mgr.latest_checkpoint)
+    if katakana_ckpt_mgr.latest_checkpoint:
+        katakana_ckpt.restore(katakana_ckpt_mgr.latest_checkpoint)
+
     # Train both classifiers at the same time.
     for epoch in range(config["classifier_training_epochs"]):
         print(f"Start of epoch {epoch+1}")

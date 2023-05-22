@@ -212,6 +212,11 @@ def train(
         max_to_keep=1
     )
 
+    if hiragana_to_katakana_mgr.latest_checkpoint:
+        hiragana_to_katakana_ckpt.restore(hiragana_to_katakana_mgr.latest_checkpoint)
+    if katakana_to_hiragana_mgr.latest_checkpoint:
+        katakana_to_hiragana_ckpt.restore(katakana_to_hiragana_mgr.latest_checkpoint)
+
     # Dual training scheme
     for epoch in range(config["generator_training_epochs"]):
         print(f"Start of epoch {epoch+1}")
