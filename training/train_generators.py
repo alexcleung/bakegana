@@ -1,6 +1,8 @@
 """
 Training the generators based on classifier labels
 """
+import os
+import time
 from typing import Dict
 
 import tensorflow as tf
@@ -181,10 +183,33 @@ def train(
 
     #########################################
     #          GENERATOR TRAINING           #
-    ######################################### 
+    #########################################
+    t0 = last_ckpt_time = time.localtime()
     print(
-        f"Beginning generator training for " 
-        f"{config['train']['generator_training_epochs']} epochs."
+        f"[{time.strftime('%Y-%m-%d %H:%M:%S', t0)}] "
+        "Beginning generator training for " 
+        f"{config['train']['classifier_training_epochs']} epochs."
+    )
+
+    # Initialize checkpointing
+    hiragana_to_katakana_ckpt = tf.train.Checkpoint(
+        optimizer=hiragana_to_katakana_optimizer,
+        model=katakana_generator
+    )
+    hiragana_to_katakana_mgr = tf.train.CheckpointManager(
+        checkpoint=hiragana_to_katakana_ckpt,
+        directory=os.path.join(config["checkpoint_dir"], "generator", "katakana"),
+        max_to_keep=1
+    )
+
+    katakana_to_hiragana_ckpt = tf.train.Checkpoint(
+        optimizer=katakana_to_hiragana_optimizer,
+        model=hiragana_generator
+    )
+    katakana_to_hiragana_mgr = tf.train.CheckpointManager(
+        checkpoint=katakana_to_hiragana_ckpt,
+        directory=os.path.join(config["checkpoint_dir"], "generator", "hiragana"),
+        max_to_keep=1
     )
 
     # Dual training scheme
@@ -242,6 +267,16 @@ def train(
             " --- "
             f"Val Accuracy on generated Hiragana images {katakana_to_hiragana_val_metric.result():.4f}"
         )
+
+        # CHECKPOINTING
+        if (time.mktime(time.localtime()) - time.mktime(last_ckpt_time)) >= config["checkpoint_interval"]:
+            last_ckpt_time = time.localtime()
+            print(
+                f"[{time.strftime('%Y-%m-%d %H:%M:%S', last_ckpt_time)}] "
+                f"Saving checkpoint at epoch {epoch}" 
+            )
+            hiragana_to_katakana_mgr.save()
+            katakana_to_hiragana_mgr.save()
 
     print("Training Complete")
 

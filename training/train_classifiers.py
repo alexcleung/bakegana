@@ -1,6 +1,8 @@
 """
 Training the classifiers based on ground truth
 """
+import os
+import time
 from typing import Dict
 
 import tensorflow as tf
@@ -130,9 +132,32 @@ def train(
     #########################################
     #            TRAINING LOOP              #
     ######################################### 
+    t0 = last_ckpt_time = time.localtime()
     print(
-        f"Beginning classifier training for " 
+        f"[{time.strftime('%Y-%m-%d %H:%M:%S', t0)}] "
+        "Beginning classifier training for " 
         f"{config['train']['classifier_training_epochs']} epochs."
+    )
+
+    # Initialize checkpointing
+    hiragana_ckpt = tf.train.Checkpoint(
+        optimizer=hiragana_optimizer,
+        model=hiragana_classifier
+    )
+    hiragana_ckpt_mgr = tf.train.CheckpointManager(
+        checkpoint=hiragana_ckpt,
+        directory=os.path.join(config["checkpoint_dir"], "classifier", "hiragana"),
+        max_to_keep=1
+    )
+
+    katakana_ckpt = tf.train.Checkpoint(
+        optimizer=katakana_optimizer,
+        model=katakana_classifier
+    )
+    katakana_ckpt_mgr = tf.train.CheckpointManager(
+        checkpoint=katakana_ckpt,
+        directory=os.path.join(config["checkpoint_dir"], "classifier", "katakana"),
+        max_to_keep=1
     )
 
     # Train both classifiers at the same time.
@@ -170,6 +195,16 @@ def train(
             " --- "
             f"Val Accuracy of katakana classifier {katakana_val_metric.result():.4f}"
         )
+
+        # CHECKPOINTING
+        if (time.mktime(time.localtime()) - time.mktime(last_ckpt_time)) >= config["checkpoint_interval"]:
+            last_ckpt_time = time.localtime()
+            print(
+                f"[{time.strftime('%Y-%m-%d %H:%M:%S', last_ckpt_time)}] "
+                f"Saving checkpoint at epoch {epoch}" 
+            )
+            hiragana_ckpt_mgr.save()
+            katakana_ckpt_mgr.save()
 
     print("Classifier training complete.")
 
