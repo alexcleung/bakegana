@@ -32,7 +32,4 @@ def sample_dataset(config):
         Image.fromarray(h).convert('RGB').save(f"h_{i}.png")
         Image.fromarray(k).convert('RGB').save(f"k_{i}.png")
         
-    print(label
-          
-if __name__ == "__main__":
-      sample_dataset()
+    print("Labels", [label_mapping[x] for x in label.numpy()])
