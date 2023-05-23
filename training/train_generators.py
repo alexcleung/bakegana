@@ -7,7 +7,7 @@ from typing import Dict
 
 import tensorflow as tf
 
-from ..model.generator import KanaGenerator
+from model.generator import KanaGenerator
 from .utils import get_pred_and_label
 
 
@@ -26,41 +26,61 @@ def train(
     katakana_classifier.trainable=False
 
     # Declare models
-    hiragana_generator = KanaGenerator(output_shape=config["image_size"]+[1])
-    katakana_generator = KanaGenerator(output_shape=config["image_size"]+[1])
+    hiragana_generator = KanaGenerator(image_shape=config["image_size"]+[1])
+    katakana_generator = KanaGenerator(image_shape=config["image_size"]+[1])
 
     # Optimizers for generators
     hiragana_to_katakana_optimizer = tf.keras.optimizers.get(
-        config["optimizer_type"]
-    )(**config["optimizer_config"])
+        config["optimizer_type"],
+        **config["optimizer_config"]
+    )
     katakana_to_hiragana_optimizer = tf.keras.optimizers.get(
-        config["optimizer_type"]
-    )(**config["optimizer_config"])
+        config["optimizer_type"],
+        **config["optimizer_config"]
+    )
 
     #########################################
     #       LOSS FUNCTION AND METRICS       #
     #########################################
     # Metrics are resetted every epoch. 
     classification_loss_fn = tf.keras.losses.get(
-        config["classification_loss_fn"]
-    )(**config["classification_loss_config"])
+        {
+            "class_name": config["classification_loss_fn"],
+            "config": config["classification_loss_config"]
+        }
+    )
     reconstruction_loss_fn = tf.keras.losses.get(
-        config["reconstruction_loss_fn"]
-    )(**config["reconstruction_loss_config"])
+        {
+            "class_name": config["reconstruction_loss_fn"],
+            "config": config["reconstruction_loss_config"]
+        }
+    )
 
     hiragana_to_katakana_classification_loss_metric = tf.keras.metrics.get(
-        config["classification_loss_fn"]
-    )(**config["classification_loss_config"])
+        {
+            "class_name": config["classification_loss_fn"],
+            "config": config["classification_loss_config"]
+        }
+    )
     katakana_to_hiragana_classification_loss_metric = tf.keras.metrics.get(
-        config["classification_loss_fn"]
-    )(**config["classification_loss_config"])
+        {
+            "class_name": config["classification_loss_fn"],
+            "config": config["classification_loss_config"]
+        }
+    )
     hiragana_to_katakana_reconstruction_loss_metric = tf.keras.metrics.get(
-        config["reconstruction_loss_fn"]
-    )(**config["reconstruction_loss_config"])
+        {
+            "class_name": config["reconstruction_loss_fn"],
+            "config": config["reconstruction_loss_config"]
+        }
+    )
     katakana_to_hiragana_reconstruction_loss_metric = tf.keras.metrics.get(
-        config["reconstruction_loss_fn"]
-    )(**config["reconstruction_loss_config"])
-
+        {
+            "class_name": config["reconstruction_loss_fn"],
+            "config": config["reconstruction_loss_config"]
+        }
+    )
+    
     hiragana_to_katakana_val_metric = tf.keras.metrics.get(
         config["classification_val_metric"]
     )
@@ -188,7 +208,7 @@ def train(
     print(
         f"[{time.strftime('%Y-%m-%d %H:%M:%S', t0)}] "
         "Beginning generator training for " 
-        f"{config['train']['classifier_training_epochs']} epochs."
+        f"{config['classifier_training_epochs']} epochs."
     )
 
     # Initialize checkpointing

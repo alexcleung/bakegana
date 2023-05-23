@@ -11,22 +11,22 @@ class KanaGenerator(tf.keras.Model):
     """
     def __init__(
         self,
-        output_shape: Tuple[int, int, int]
+        image_shape: Tuple[int, int, int]
     ):
         """
-        `output_shape`: (width, height, channels)
+        `image_shape`: (width, height, channels)
         """
         super().__init__()
 
-        self.output_shape = output_shape
+        self.image_shape = image_shape
 
         # Layers
         self.fc = tf.keras.layers.Dense(
-            output_shape[0]*output_shape[1]*output_shape[2],
+            image_shape[0]*image_shape[1]*image_shape[2],
             activation="relu"
         )
         self.reshape = tf.keras.layers.Reshape(
-            output_shape
+            image_shape
         )
         self.bn = tf.keras.layers.BatchNormalization()
         self.deconv1 = tf.keras.layers.Conv2DTranspose(
@@ -69,7 +69,7 @@ class KanaGenerator(tf.keras.Model):
     def call(self, inputs, training=False):
         """
         `inputs`: Tensor of shape [batch, n_classes, dim_output]
-        Returns: Tensor of shape `output_shape`
+        Returns: Tensor of shape `image_shape`
         """
         x = self.fc(inputs)
         x = self.reshape(x)

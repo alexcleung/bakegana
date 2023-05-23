@@ -7,7 +7,7 @@ from typing import Dict
 
 import tensorflow as tf
 
-from ..model.classifier import KanaClassifier
+from model.classifier import KanaClassifier
 from .utils import get_pred_and_label
 
 
@@ -22,36 +22,45 @@ def train(
     """
     # Declare models
     hiragana_classifier = KanaClassifier(
-        input_shape=config["image_size"] + [1], # 1 channel (grayscale)
         n_classes=len(label_mapping),
     )
     katakana_classifier = KanaClassifier(
-        input_shape=config["image_size"] + [1], # 1 channel (grayscale)
         n_classes=len(label_mapping),
     )
 
     # Optimizers for classifiers
     hiragana_optimizer = tf.keras.optimizers.get(
-        config["optimizer_type"]
-    )(**config["optimizer_config"])
+        config["optimizer_type"],
+        **config["optimizer_config"]
+    )
     katakana_optimizer = tf.keras.optimizers.get(
-        config["optimizer_type"]
-    )(**config["optimizer_config"])
+        config["optimizer_type"],
+        **config["optimizer_config"]
+    )
 
     #########################################
     #       LOSS FUNCTION AND METRICS       #
     #########################################
     # Metrics are resetted every epoch. 
     loss_fn = tf.keras.losses.get(
-        config["classification_loss_fn"]
-    )(**config["classification_loss_config"])
+        {
+            "class_name": config["classification_loss_fn"],
+            "config": config["classification_loss_config"]
+        }
+    )
 
     hiragana_loss_metric = tf.keras.metrics.get(
-        config["classification_loss_fn"]
-    )(**config["classification_loss_config"])
+        {
+            "class_name": config["classification_loss_fn"],
+            "config": config["classification_loss_config"]
+        }
+    )
     katakana_loss_metric = tf.keras.metrics.get(
-        config["classification_loss_fn"]
-    )(**config["classification_loss_config"])
+        {
+            "class_name": config["classification_loss_fn"],
+            "config": config["classification_loss_config"]
+        }
+    )
 
     hiragana_val_metric = tf.keras.metrics.get(
         config["classification_val_metric"]
@@ -136,7 +145,7 @@ def train(
     print(
         f"[{time.strftime('%Y-%m-%d %H:%M:%S', t0)}] "
         "Beginning classifier training for " 
-        f"{config['train']['classifier_training_epochs']} epochs."
+        f"{config['classifier_training_epochs']} epochs."
     )
 
     # Initialize checkpointing

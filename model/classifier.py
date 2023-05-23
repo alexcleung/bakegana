@@ -14,20 +14,17 @@ class KanaClassifier(tf.keras.Model):
     """
     def __init__(
             self,
-            input_shape: Tuple[int, int, int],
             n_classes: int,
             dim_output: int = 16,
             n_routings: int = 3
         ):
         """
-        `input_shape`: (width, height, channels)
         `n_classes`: Number of possible classes
         `dim_output`: Size of each class representation
         `n_routing`: Number of routing iterations (dynamic routing)
         """
         super().__init__()
         
-        self.input_shape = input_shape
         self.n_classes = n_classes
         self.n_routings = n_routings
 
@@ -54,7 +51,7 @@ class KanaClassifier(tf.keras.Model):
             kernel_size=9,
             strides=2
         )
-        self.kana_caps = CapsuleLayer(n_capsule=n_classes, dim_capsule=dim_output, routings=n_routings)
+        self.kana_caps = CapsuleLayer(n_capsule=n_classes, dim_capsule=dim_output, n_routings=n_routings)
 
     def call(self, inputs, training=False):
         """
