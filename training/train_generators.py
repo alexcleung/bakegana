@@ -115,7 +115,7 @@ def train(
         grads = tape.gradient(
             total_loss,
             ( # list concatenation of weights
-                katakana_generator.trainable_weights,
+                katakana_generator.trainable_weights
                 + hiragana_generator.trainable_weights
             )
         )
@@ -123,7 +123,7 @@ def train(
             zip(
                 grads,
                 ( # list concatenation of weights
-                    katakana_generator.trainable_weights,
+                    katakana_generator.trainable_weights
                     + hiragana_generator.trainable_weights
                 )
             )
@@ -157,7 +157,7 @@ def train(
         grads = tape.gradient(
             total_loss,
             ( # list concatenation of weights
-                hiragana_generator.trainable_weights,
+                hiragana_generator.trainable_weights
                 + katakana_generator.trainable_weights
             )
         )
@@ -165,7 +165,7 @@ def train(
             zip(
                 grads,
                 ( # list concatenation of weights
-                    hiragana_generator.trainable_weights,
+                    hiragana_generator.trainable_weights
                     + katakana_generator.trainable_weights
                 )
             )
