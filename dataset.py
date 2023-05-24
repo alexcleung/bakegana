@@ -159,4 +159,10 @@ def create_dataset(
     train_ds = preprocessing(train_ds)
     val_ds = preprocessing(val_ds)
 
+    # Performance optimization
+    train_ds = train_ds.cache()
+    val_ds = val_ds.cache()
+    train_ds = train_ds.prefetch(tf.data.AUTOTUNE)
+    val_ds = val_ds.prefetch(tf.data.AUTOTUNE)
+
     return train_ds, val_ds, label_mapping

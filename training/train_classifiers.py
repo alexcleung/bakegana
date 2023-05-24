@@ -20,6 +20,8 @@ def train(
     """
     Training script
     """
+    print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
+
     # Declare models
     hiragana_classifier = KanaClassifier(
         n_classes=len(label_mapping),
