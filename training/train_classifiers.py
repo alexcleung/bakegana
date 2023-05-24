@@ -29,12 +29,10 @@ def train(
     )
 
     # Optimizers for classifiers
-    hiragana_optimizer = tf.keras.optimizers.get(
-        config["optimizer_type"],
+    hiragana_optimizer = tf.keras.optimizers.Adam(
         **config["optimizer_config"]
     )
-    katakana_optimizer = tf.keras.optimizers.get(
-        config["optimizer_type"],
+    katakana_optimizer = tf.keras.optimizers.Adam(
         **config["optimizer_config"]
     )
 

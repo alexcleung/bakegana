@@ -30,12 +30,10 @@ def train(
     katakana_generator = KanaGenerator(image_shape=config["image_size"]+[1])
 
     # Optimizers for generators
-    hiragana_to_katakana_optimizer = tf.keras.optimizers.get(
-        config["optimizer_type"],
+    hiragana_to_katakana_optimizer = tf.keras.optimizers.Adam(
         **config["optimizer_config"]
     )
-    katakana_to_hiragana_optimizer = tf.keras.optimizers.get(
-        config["optimizer_type"],
+    katakana_to_hiragana_optimizer = tf.keras.optimizers.Adam(
         **config["optimizer_config"]
     )
 
