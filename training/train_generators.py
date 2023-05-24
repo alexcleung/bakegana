@@ -256,7 +256,7 @@ def train(
             ) = katakana_to_hiragana_train_step(katakana_img, label)
 
             # Log metrics
-            if step % 100 == 0:
+            if step % 10 == 0:
                 print(
                     "Hiragana to Katakana: \n"
                     f"Epoch Classification Loss: {hiragana_to_katakana_classification_loss_metric.result():.4f}"

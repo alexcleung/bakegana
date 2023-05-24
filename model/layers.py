@@ -103,7 +103,7 @@ class CapsuleLayer(tf.keras.layers.Layer):
         # Dynamic Routing - coupling coefficients
         b = tf.zeros(shape=[batch_size, self.n_input_capsule, self.n_capsule], dtype=u.dtype)
 
-        for _ in self.n_routings:
+        for _ in range(self.n_routings):
             c = tf.nn.softmax(b, axis=-1)
             s = tf.reduce_sum(u * c[:, :, :, tf.newaxis], axis=1) # [batch, n_capsule, dim_capsule]
             v = squash(s)

@@ -6,8 +6,8 @@ batch_size: 256
 image_size: [76, 76]
 
 # training params
-classifier_training_epochs: 5
-generator_training_epochs: 5
+classifier_training_epochs: 1
+generator_training_epochs: 1
 optimizer_type: Adam
 optimizer_config:
   learning_rate: 0.001

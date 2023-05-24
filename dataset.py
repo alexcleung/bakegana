@@ -131,10 +131,8 @@ def create_dataset(
             subset="both"
         )
 
-        labels = tf.data.Dataset.from_generator(
-            lambda: (i for _ in glob.glob(os.path.join(hiragana_dir, "*.png"))),
-            output_types=tf.int32
-        )
+        label_tensor = [i] * len(glob.glob(os.path.join(hiragana_dir, "*.png")))
+        labels = tf.data.Dataset.from_tensor_slices(label_tensor)
 
         train = tf.data.Dataset.zip((hiragana_train, katakana_train, labels))
         val = tf.data.Dataset.zip((hiragana_val, katakana_val, labels))
