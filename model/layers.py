@@ -80,7 +80,8 @@ class CapsuleLayer(tf.keras.layers.Layer):
                 self.dim_capsule
             ],
             initializer='glorot_uniform',
-            trainable=True
+            trainable=True,
+            name="capsule_layer_weight"
         )
 
     def call(self, inputs):

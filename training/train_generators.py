@@ -303,4 +303,18 @@ def train(
 
     print("Training Complete")
 
+    #########################################
+    #              SAVE MODELS              #
+    #########################################
+
+    print("Saving models")
+
+    hiragana_generator.save(
+        os.path.join(config["generator_save_path"], "hiragana", "1")
+    )
+
+    katakana_generator.save(
+        os.path.join(config["generator_save_path"], "katakana", "1")
+    )
+
     return hiragana_classifier, katakana_classifier, hiragana_generator, katakana_generator

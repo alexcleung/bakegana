@@ -222,4 +222,18 @@ def train(
 
     print("Classifier training complete.")
 
+    #########################################
+    #              SAVE MODELS              #
+    #########################################
+
+    print("Saving models")
+
+    hiragana_classifier.save(
+        os.path.join(config["classifier_save_path"], "hiragana", "1")
+    )
+
+    katakana_classifier.save(
+        os.path.join(config["classifier_save_path"], "katakana", "1")
+    )
+
     return hiragana_classifier, katakana_classifier

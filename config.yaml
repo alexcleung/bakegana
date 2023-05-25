@@ -19,3 +19,6 @@ reconstruction_loss_config: {}
 
 checkpoint_interval: 1200 # 20 minutes
 checkpoint_dir: "./checkpoints"
+
+classifier_save_path: ./saved_models/classifiers
+generator_save_path: ./saved_models/generators
