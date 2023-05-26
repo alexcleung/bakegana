@@ -63,8 +63,8 @@ def predict(config: Dict, filepath: str, type: str):
         pred_img = generator(pred_rep).numpy()
         input_img = img.numpy()
 
-        pred_img = np.squeeze(pred_img)
-        input_img = np.squeeze(input_img)
+        pred_img = np.squeeze(pred_img)*255
+        input_img = np.squeeze(input_img)*255
 
         print(f"Predicted class of input {i}: {pred_class}")
         Image.fromarray(input_img).convert('RGB').save(f"input_{i}.png")
