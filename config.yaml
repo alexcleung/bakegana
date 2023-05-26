@@ -16,7 +16,7 @@ classification_loss_config:
 classification_val_metric: CategoricalAccuracy
 reconstruction_loss_fn: MeanSquaredError
 reconstruction_loss_config: {}
-reconstruction_loss_coef: 1
+reconstruction_loss_coef: 10
 
 checkpoint_interval: 1200 # 20 minutes
 checkpoint_dir: "./checkpoints"
