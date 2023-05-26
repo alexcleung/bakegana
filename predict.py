@@ -13,7 +13,7 @@ import yaml
 from dataset import preprocessing
 from training.utils import get_pred
 
-def predict(config: Dict, filepath: str, type: str):
+def predict(config: Dict, filepath: str, type: str, reps: bool):
     """
     Run Prediction
     """
@@ -57,15 +57,19 @@ def predict(config: Dict, filepath: str, type: str):
     print("Models loaded")
 
     for i, img in enumerate(dataset):
-        pred_rep = classifier(img)
-        pred_class = tf.argmax(tf.squeeze(get_pred(pred_rep), axis=0)).numpy()
-        pred_class = label_mapping[pred_class]
-        pred_img = generator(pred_rep).numpy()
         input_img = img.numpy()
-
-        pred_img = np.squeeze(pred_img)*255
         input_img = np.squeeze(input_img)*255
 
-        print(f"Predicted class of input {i}: {pred_class}")
+        for r in range(reps):
+            pred_rep = classifier(img)
+            if r == 0:
+                pred_class = tf.argmax(tf.squeeze(get_pred(pred_rep), axis=0)).numpy()
+                pred_class = label_mapping[pred_class]
+                print(f"Predicted class of input {i}: {pred_class}")
+            img = generator(pred_rep)
+        
+        pred_img = img.numpy()
+        pred_img = np.squeeze(pred_img)*255
+        
         Image.fromarray(input_img).convert('RGB').save(f"input_{i}.png")
         Image.fromarray(pred_img).convert('RGB').save(f"generated_{i}.png")

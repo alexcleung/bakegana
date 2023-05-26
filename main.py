@@ -52,19 +52,25 @@ if __name__ == "__main__":
         )
 
     else:
-        file_parser = argparse.ArgumentParser()
-        file_parser.add_argument(
+        predict_parser = argparse.ArgumentParser()
+        predict_parser.add_argument(
             "--filepath",
             type=str,
             required=True,
             help="Location of input image to run prediction/generation"
         )
-        file_parser.add_argument(
+        predict_parser.add_argument(
             "--type",
             choices=["h", "k"],
             required=True,
             help="Type of input character image. h for hiragana, k for katakana"
         )
-        file_parser.parse_known_args(namespace=args)
+        predict_parser.add_argument(
+            "--reps",
+            type=int,
+            default=1,
+            help="Number of times to apply the generator"
+        )
+        predict_parser.parse_known_args(namespace=args)
 
-        predict(config, filepath=args.filepath, type=args.type)
+        predict(config, filepath=args.filepath, type=args.type, reps=args.reps)

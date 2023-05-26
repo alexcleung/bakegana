@@ -7,7 +7,7 @@ from typing import Dict
 
 import tensorflow as tf
 
-from model.generator import KanaGenerator
+from model.generator import KanaGenerator2 as KanaGenerator
 from .utils import get_pred_and_label
 
 
