@@ -6,8 +6,8 @@ batch_size: 32
 image_size: [76, 76]
 
 # training params
-classifier_training_epochs: 1
-generator_training_epochs: 1
+classifier_training_epochs: 10
+generator_training_epochs: 20
 optimizer_config:
   learning_rate: 0.001
 classification_loss_fn: CategoricalCrossentropy
@@ -22,3 +22,6 @@ checkpoint_dir: "./checkpoints"
 
 classifier_save_path: ./saved_models/classifiers
 generator_save_path: ./saved_models/generators
+mapping_save_path: ./saved_models/mappings
+
+predictions_output_folder: ./predictions_outputs/

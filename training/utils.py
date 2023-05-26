@@ -4,6 +4,19 @@ Loss functions
 
 import tensorflow as tf
 
+def get_pred(capsule_reps):
+    """
+    `capsule_reps`: Output from classifier.
+        Tensor of shape [batch, n_classes, dim_output]
+    Returns: logits of predicted class
+        Tensor of shape [batch, n_classes]
+    """
+    return tf.math.sqrt(
+        tf.reduce_sum(
+            tf.math.square(capsule_reps),
+            axis=-1
+        )
+    )
 
 def get_pred_and_label(capsule_reps, labels):
     """
@@ -19,18 +32,8 @@ def get_pred_and_label(capsule_reps, labels):
     """
     n_classes = tf.shape(capsule_reps)[1]
 
-    y_pred = tf.math.sqrt(
-        tf.reduce_sum(
-            tf.math.square(capsule_reps),
-            axis=-1
-        )
-    )
+    y_pred = get_pred(capsule_reps)
 
     y_true = tf.one_hot(labels, depth=n_classes, dtype=y_pred.dtype)
 
     return y_true, y_pred
-
-
-
-
-

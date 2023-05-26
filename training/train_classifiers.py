@@ -6,6 +6,7 @@ import time
 from typing import Dict
 
 import tensorflow as tf
+import yaml
 
 from model.classifier import KanaClassifier
 from .utils import get_pred_and_label
@@ -235,5 +236,8 @@ def train(
     katakana_classifier.save(
         os.path.join(config["classifier_save_path"], "katakana", "1")
     )
+
+    with open(os.path.join(config["mapping_save_path"], "1", "mapping.yaml"), "w") as stream:
+        yaml.dump(label_mapping, stream, default_flow_style=False)
 
     return hiragana_classifier, katakana_classifier

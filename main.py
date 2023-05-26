@@ -10,6 +10,7 @@ from dataset import create_dataset
 from sample_dataset import sample_dataset
 from training.train_classifiers import train as train_classifiers
 from training.train_generators import train as train_generators
+from predict import predict
 
 if __name__ == "__main__":
     args = argparse.Namespace()
@@ -17,7 +18,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--mode",
-        choices=["sample_dataset", "train", "predict", "generate"]
+        choices=["sample_dataset", "train", "predict"]
     )
     parser.parse_known_args(namespace=args)
 
@@ -26,6 +27,7 @@ if __name__ == "__main__":
 
     if args.mode == "sample_dataset":
         sample_dataset(config)
+
     elif args.mode == "train":
         train_dataset, val_dataset, label_mapping = create_dataset(config)
 
@@ -52,7 +54,7 @@ if __name__ == "__main__":
     else:
         file_parser = argparse.ArgumentParser()
         file_parser.add_argument(
-            "--file",
+            "--filepath",
             type=str,
             required=True,
             help="Location of input image to run prediction/generation"
@@ -65,5 +67,4 @@ if __name__ == "__main__":
         )
         file_parser.parse_known_args(namespace=args)
 
-        raise NotImplemented("Prediction and Generation not yet implemented ;)")
-    
+        predict(config, filepath=args.filepath, type=args.type)
