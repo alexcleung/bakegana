@@ -27,8 +27,8 @@ def sample_dataset(config):
     katas = np.split(kata, config["batch_size"])
     
     for i, (h,k) in enumerate(zip(hiras, katas)):
-        h = np.squeeze(h)
-        k = np.squeeze(k)
+        h = np.squeeze(h)*255
+        k = np.squeeze(k)*255
         Image.fromarray(h).convert('RGB').save(f"h_{i}.png")
         Image.fromarray(k).convert('RGB').save(f"k_{i}.png")
         

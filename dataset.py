@@ -69,6 +69,14 @@ def preprocessing(dataset, training=True):
             else tf.image.adjust_contrast(t[0], 4),
         num_parallel_calls=tf.data.AUTOTUNE
     )
+
+    # scale to 0 - 1
+    dataset = dataset.map(
+        lambda *t:
+            (t[0]/255, t[1]/255, t[2]) if training
+            else t[0]/255,
+        num_parallel_calls=tf.data.AUTOTUNE
+    )
     
     return dataset
 
