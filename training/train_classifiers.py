@@ -237,7 +237,10 @@ def train(
         os.path.join(config["classifier_save_path"], "katakana", "1")
     )
 
-    with open(os.path.join(config["mapping_save_path"], "1", "mapping.yaml"), "w") as stream:
+    mapping_save_dir = os.path.join(config["mapping_save_path"], "1")
+    if not os.path.exists(mapping_save_dir):
+        os.makedirs(mapping_save_dir)
+    with open(os.path.join(mapping_save_dir, "mapping.yaml"), "w") as stream:
         yaml.dump(label_mapping, stream, default_flow_style=False)
 
     return hiragana_classifier, katakana_classifier

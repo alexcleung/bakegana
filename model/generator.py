@@ -84,3 +84,44 @@ class KanaGenerator(tf.keras.Model):
         x = self.deconv5(x)
 
         return x
+
+
+class KanaGenerator2(tf.keras.Model):
+    """
+    Simpler Decoder, with just a few FC layers.
+    """
+    def __init__(
+        self,
+        image_shape: Tuple[int, int, int]
+    ):
+        """
+        `image_shape`: (width, height, channels)
+        """
+        super().__init__()
+
+        self.image_shape = image_shape
+
+        # Layers
+        self.reshape_1 = tf.keras.layers.Reshape(
+            [-1]
+        )
+        self.fc1 = tf.keras.layers.Dense(512, activation="relu")
+        self.fc2 = tf.keras.layers.Dense(1024, activation="relu")
+        self.fc3 = tf.keras.layers.Dense(
+            image_shape[0]*image_shape[1]*image_shape[2],
+            activation="sigmoid"
+        )
+        self.reshape_2 = tf.keras.layers.Reshape(image_shape)
+
+    def call(self, inputs, training=False):
+        """
+        `inputs`: Tensor of shape [batch, n_classes, dim_output]
+        Returns: Tensor of shape `image_shape`
+        """
+        x = self.reshape_1(inputs)
+        x = self.fc1(x)
+        x = self.fc2(x)
+        x = self.fc3(x)
+        x = self.reshape_2(x)
+
+        return x

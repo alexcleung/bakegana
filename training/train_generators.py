@@ -53,6 +53,7 @@ def train(
             "config": config["reconstruction_loss_config"]
         }
     )
+    reconstruction_loss_coef = config["reconstruction_loss_coef"]
 
     hiragana_to_katakana_classification_loss_metric = tf.keras.metrics.get(
         {
@@ -92,7 +93,7 @@ def train(
     # Wrap the training steps in tf.function for performance
 
     @tf.function
-    def hiragana_to_katakana_train_step(hira_img, lbl):
+    def hiragana_to_katakana_train_step(hira_img, lbl, recon_loss_coef):
         """
         Train Step for Hiragana -> Katakana
         """
@@ -106,7 +107,7 @@ def train(
 
             # Reconstruction
             hiragana_recon = hiragana_generator(katakana_pred, training=True)
-            reconstruction_loss = reconstruction_loss_fn(hira_img, hiragana_recon)
+            reconstruction_loss = reconstruction_loss_fn(hira_img, hiragana_recon) * recon_loss_coef
             
             total_loss = classification_loss + reconstruction_loss
         
@@ -134,7 +135,7 @@ def train(
 
 
     @tf.function
-    def katakana_to_hiragana_train_step(kata_img, lbl):
+    def katakana_to_hiragana_train_step(kata_img, lbl, recon_loss_coef):
         """
         Train Step for Katakana -> Hiragana
         """
@@ -148,7 +149,7 @@ def train(
 
             # Reconstruction
             katakana_recon = katakana_generator(hiragana_pred, training=True)
-            reconstruction_loss = reconstruction_loss_fn(kata_img, katakana_recon)
+            reconstruction_loss = reconstruction_loss_fn(kata_img, katakana_recon) * recon_loss_coef
             
             total_loss = classification_loss + reconstruction_loss
         
@@ -247,11 +248,11 @@ def train(
             (
                 hiragana_to_katakana_classification_loss,
                 hiragana_to_katakana_reconstruction_loss,
-            ) = hiragana_to_katakana_train_step(hiragana_img, label)
+            ) = hiragana_to_katakana_train_step(hiragana_img, label, reconstruction_loss_coef)
             (
                 katakana_to_hiragana_classification_loss,
                 katakana_to_hiragana_reconstruction_loss,
-            ) = katakana_to_hiragana_train_step(katakana_img, label)
+            ) = katakana_to_hiragana_train_step(katakana_img, label, reconstruction_loss_coef)
 
             # Log metrics
             if step % 10 == 0:
@@ -259,21 +260,21 @@ def train(
                     "Hiragana to Katakana: \n"
                     f"Epoch Classification Loss: {hiragana_to_katakana_classification_loss_metric.result():.4f}"
                     " --- "
-                    f"Epoch Reconstruction Loss: {hiragana_to_katakana_reconstruction_loss_metric.result():.4f}"
+                    f"Epoch Reconstruction Loss: {hiragana_to_katakana_reconstruction_loss_metric.result() * reconstruction_loss_coef:.4f}"
                     " --- "
                     f"Batch Classification Loss: {hiragana_to_katakana_classification_loss:.4f}"
                     " --- "
-                    f"Batch Reconstruction Loss: {hiragana_to_katakana_reconstruction_loss:.4f}"
+                    f"Batch Reconstruction Loss: {hiragana_to_katakana_reconstruction_loss * reconstruction_loss_coef:.4f}"
                 )
                 print(
                     "Katakana to Hiragana: \n"
                     f"Epoch Classification Loss: {katakana_to_hiragana_classification_loss_metric.result():.4f}"
                     " --- "
-                    f"Epoch Reconstruction Loss: {katakana_to_hiragana_reconstruction_loss_metric.result():.4f}"
+                    f"Epoch Reconstruction Loss: {katakana_to_hiragana_reconstruction_loss_metric.result() * reconstruction_loss_coef:.4f}"
                     " --- "
                     f"Batch Classification Loss: {katakana_to_hiragana_classification_loss:.4f}"
                     " --- "
-                    f"Batch Reconstruction Loss: {katakana_to_hiragana_reconstruction_loss:.4f}"
+                    f"Batch Reconstruction Loss: {katakana_to_hiragana_reconstruction_loss * reconstruction_loss_coef:.4f}"
                 )
 
         # VALIDATION LOOP
