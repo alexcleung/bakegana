@@ -84,9 +84,12 @@ def train(
     hiragana_to_katakana_val_metric = tf.keras.metrics.get(
         config["classification_val_metric"]
     )
+    best_result_hiragana_to_katakana_val_metric = 0
+
     katakana_to_hiragana_val_metric = tf.keras.metrics.get(
         config["classification_val_metric"]
     )
+    best_result_katakana_to_hiragana_val_metric = 0
 
     #########################################
     #             TF FUNCTIONS              #
@@ -238,6 +241,7 @@ def train(
         katakana_to_hiragana_ckpt.restore(katakana_to_hiragana_mgr.latest_checkpoint)
 
     # Dual training scheme
+    epochs_since_improvement = 0
     for epoch in range(config["generator_training_epochs"]):
         print(f"Start of epoch {epoch+1}")
 
@@ -292,6 +296,21 @@ def train(
             " --- "
             f"Val Accuracy on generated Hiragana images {katakana_to_hiragana_val_metric.result():.4f}"
         )
+
+        # EARLY STOPPAGE CONDITION
+        if (
+            (hiragana_to_katakana_val_metric.result() > best_result_hiragana_to_katakana_val_metric)
+            or (katakana_to_hiragana_val_metric.result() > best_result_katakana_to_hiragana_val_metric)
+        ):
+            best_result_hiragana_to_katakana_val_metric = max(hiragana_to_katakana_val_metric.result(), best_result_hiragana_to_katakana_val_metric)
+            best_result_katakana_to_hiragana_val_metric - max(katakana_to_hiragana_val_metric.result(), best_result_katakana_to_hiragana_val_metric)
+            epochs_since_improvement = 0
+        else:
+            epochs_since_improvement +=1
+
+        if epochs_since_improvement >= config["early_stopping_epochs_since_improvement"]:
+            print("EARLY STOPPING")
+            break
 
         # CHECKPOINTING
         if (time.mktime(time.localtime()) - time.mktime(last_ckpt_time)) >= config["checkpoint_interval"]:

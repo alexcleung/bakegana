@@ -67,9 +67,12 @@ def train(
     hiragana_val_metric = tf.keras.metrics.get(
         config["classification_val_metric"]
     )
+    best_result_hiragana_val_metric = 0
+
     katakana_val_metric = tf.keras.metrics.get(
         config["classification_val_metric"]
     )
+    best_result_katakana_val_metric = 0
 
     #########################################
     #             TF FUNCTIONS              #
@@ -177,6 +180,7 @@ def train(
         katakana_ckpt.restore(katakana_ckpt_mgr.latest_checkpoint)
 
     # Train both classifiers at the same time.
+    epochs_since_improvement = 0
     for epoch in range(config["classifier_training_epochs"]):
         print(f"Start of epoch {epoch+1}")
 
@@ -211,6 +215,21 @@ def train(
             " --- "
             f"Val Accuracy of katakana classifier {katakana_val_metric.result():.4f}"
         )
+
+        # EARLY STOPPAGE CONDITION
+        if (
+            (hiragana_val_metric.result() > best_result_hiragana_val_metric)
+            or (katakana_val_metric.result() > best_result_katakana_val_metric)
+        ):
+            best_result_hiragana_val_metric = max(hiragana_val_metric.result(), best_result_hiragana_val_metric)
+            best_result_katakana_val_metric = max(katakana_val_metric.result(), best_result_katakana_val_metric)
+            epochs_since_improvement = 0
+        else:
+            epochs_since_improvement +=1
+
+        if epochs_since_improvement >= config["early_stopping_epochs_since_improvement"]:
+            print("EARLY STOPPING")
+            break
 
         # CHECKPOINTING
         if (time.mktime(time.localtime()) - time.mktime(last_ckpt_time)) >= config["checkpoint_interval"]:
