@@ -303,7 +303,7 @@ def train(
             or (katakana_to_hiragana_val_metric.result() > best_result_katakana_to_hiragana_val_metric)
         ):
             best_result_hiragana_to_katakana_val_metric = max(hiragana_to_katakana_val_metric.result(), best_result_hiragana_to_katakana_val_metric)
-            best_result_katakana_to_hiragana_val_metric - max(katakana_to_hiragana_val_metric.result(), best_result_katakana_to_hiragana_val_metric)
+            best_result_katakana_to_hiragana_val_metric = max(katakana_to_hiragana_val_metric.result(), best_result_katakana_to_hiragana_val_metric)
             epochs_since_improvement = 0
         else:
             epochs_since_improvement +=1
