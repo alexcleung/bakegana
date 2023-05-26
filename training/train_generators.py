@@ -7,7 +7,7 @@ from typing import Dict
 
 import tensorflow as tf
 
-from model.generator import KanaGenerator2 as KanaGenerator
+from model.generator import KanaGenerator
 from .utils import get_pred_and_label
 
 
@@ -17,6 +17,7 @@ def train(
     katakana_classifier: tf.keras.Model,
     train_dataset: tf.data.Dataset,
     val_dataset: tf.data.Dataset,
+    timestamp: str
 ):
     """
     Training script
@@ -311,11 +312,11 @@ def train(
     print("Saving models")
 
     hiragana_generator.save(
-        os.path.join(config["generator_save_path"], "hiragana", "1")
+        os.path.join(config["generator_save_path"], "hiragana", timestamp)
     )
 
     katakana_generator.save(
-        os.path.join(config["generator_save_path"], "katakana", "1")
+        os.path.join(config["generator_save_path"], "katakana", timestamp)
     )
 
     return hiragana_classifier, katakana_classifier, hiragana_generator, katakana_generator

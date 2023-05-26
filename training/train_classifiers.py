@@ -16,7 +16,8 @@ def train(
     config: Dict,
     train_dataset: tf.data.Dataset,
     val_dataset: tf.data.Dataset,
-    label_mapping: Dict 
+    label_mapping: Dict,
+    timestamp: str
 ):
     """
     Training script
@@ -230,14 +231,14 @@ def train(
     print("Saving models")
 
     hiragana_classifier.save(
-        os.path.join(config["classifier_save_path"], "hiragana", "1")
+        os.path.join(config["classifier_save_path"], "hiragana", timestamp)
     )
 
     katakana_classifier.save(
-        os.path.join(config["classifier_save_path"], "katakana", "1")
+        os.path.join(config["classifier_save_path"], "katakana", timestamp)
     )
 
-    mapping_save_dir = os.path.join(config["mapping_save_path"], "1")
+    mapping_save_dir = os.path.join(config["mapping_save_path"], timestamp)
     if not os.path.exists(mapping_save_dir):
         os.makedirs(mapping_save_dir)
     with open(os.path.join(mapping_save_dir, "mapping.yaml"), "w") as stream:

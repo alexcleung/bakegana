@@ -13,7 +13,7 @@ import yaml
 from dataset import preprocessing
 from training.utils import get_pred
 
-def predict(config: Dict, filepath: str, type: str, reps: bool):
+def predict(config: Dict, model_version: str, filepath: str, type: str, reps: bool):
     """
     Run Prediction
     """
@@ -41,12 +41,12 @@ def predict(config: Dict, filepath: str, type: str, reps: bool):
     dataset = preprocessing(dataset, training=False)
 
     if type == "h":
-        classifier_path = os.path.join(config["classifier_save_path"], "hiragana", "1")
-        generator_path = os.path.join(config["generator_save_path"], "katakana", "1")
+        classifier_path = os.path.join(config["classifier_save_path"], "hiragana", model_version)
+        generator_path = os.path.join(config["generator_save_path"], "katakana", model_version)
     else:
-        classifier_path = os.path.join(config["classifier_save_path"], "katakana", "1")
-        generator_path = os.path.join(config["generator_save_path"], "hiragana", "1")
-    mapping_path = os.path.join(config["mapping_save_path"], "1", "mapping.yaml")
+        classifier_path = os.path.join(config["classifier_save_path"], "katakana", model_version)
+        generator_path = os.path.join(config["generator_save_path"], "hiragana", model_version)
+    mapping_path = os.path.join(config["mapping_save_path"], model_version, "mapping.yaml")
 
 
     print(f"Loading models")

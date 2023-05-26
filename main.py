@@ -3,6 +3,7 @@ Entry point
 """
 
 import argparse
+from datetime import datetime
 
 import yaml
 
@@ -25,6 +26,8 @@ if __name__ == "__main__":
     with open("./config.yaml", "r") as stream:
         config = yaml.safe_load(stream)
 
+    timestamp = datetime.datetime.now().strftime(r"%d%m%Y%H%M%S")
+
     if args.mode == "sample_dataset":
         sample_dataset(config)
 
@@ -35,7 +38,8 @@ if __name__ == "__main__":
             config=config,
             train_dataset=train_dataset,
             val_dataset=val_dataset,
-            label_mapping=label_mapping
+            label_mapping=label_mapping,
+            timestamp=timestamp
         )
 
         (
@@ -48,11 +52,18 @@ if __name__ == "__main__":
             hiragana_classifier=hiragana_classifier,
             katakana_classifier=katakana_classifier,
             train_dataset=train_dataset,
-            val_dataset=val_dataset
+            val_dataset=val_dataset,
+            timestamp=timestamp
         )
 
     else:
         predict_parser = argparse.ArgumentParser()
+        predict_parser.add_argument(
+            "--model_version",
+            type=str,
+            required=True,
+            help="Model version to use"
+        )
         predict_parser.add_argument(
             "--filepath",
             type=str,
@@ -73,4 +84,10 @@ if __name__ == "__main__":
         )
         predict_parser.parse_known_args(namespace=args)
 
-        predict(config, filepath=args.filepath, type=args.type, reps=args.reps)
+        predict(
+            config,
+            model_version=args.model_version,
+            filepath=args.filepath,
+            type=args.type,
+            reps=args.reps
+        )
