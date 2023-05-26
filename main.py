@@ -26,7 +26,7 @@ if __name__ == "__main__":
     with open("./config.yaml", "r") as stream:
         config = yaml.safe_load(stream)
 
-    timestamp = datetime.datetime.now().strftime(r"%d%m%Y%H%M%S")
+    timestamp = datetime.now().strftime(r"%d%m%Y%H%M%S")
 
     if args.mode == "sample_dataset":
         sample_dataset(config)
