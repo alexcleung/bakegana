@@ -45,24 +45,28 @@ def validate_subdirectories(data_dir: str, character: str):
     )
 
 
-def preprocessing(dataset):
+def preprocessing(dataset, training=True):
     """
     Apply preprocessing transformations to the dataset.
     """
 
     # Invert - white characters on black background
     dataset = dataset.map(
-        lambda h, k, l: (-1*h+255,-1*k+255, l),
+        lambda *t: 
+            (-1*t[0]+255,-1*t[1]+255, t[2]) if training
+            else -1*t[0]+255,
         num_parallel_calls=tf.data.AUTOTUNE
     )
     
     # Increase contrast
     dataset = dataset.map(
-        lambda h, k, l: (
-            tf.image.adjust_contrast(h, 4),
-            tf.image.adjust_contrast(k, 4),
-            l
-        ),
+        lambda *t: 
+            (
+                tf.image.adjust_contrast(t[0], 4),
+                tf.image.adjust_contrast(t[1], 4),
+                t[2]
+            ) if training
+            else tf.image.adjust_contrast(t[0], 4),
         num_parallel_calls=tf.data.AUTOTUNE
     )
     
@@ -114,6 +118,7 @@ def create_dataset(
             color_mode="grayscale",
             batch_size=None,
             image_size=image_size,
+            interpolation="bilinear",
             shuffle=False,
             validation_split=0.1,
             subset="both"
@@ -126,6 +131,7 @@ def create_dataset(
             color_mode="grayscale",
             batch_size=None,
             image_size=image_size,
+            interpolation="bilinear",
             shuffle=False,
             validation_split=0.1,
             subset="both"

@@ -23,17 +23,22 @@ def predict(config: Dict, filepath: str, type: str):
             labels=None,
             label_mode=None,
             color_mode="grayscale",
-            batch_size=None,
+            batch_size=1,
             image_size=config["image_size"],
+            interpolation="bilinear",
             shuffle=False
         )
     else:
-        img = Image.open(filepath).convert('L')
-        img = np.array(img)
-        dataset = tf.from_tensors([img])
+        img = tf.keras.utils.load_img(
+            filepath,   
+            color_mode="grayscale",
+            target_size=config["image_size"],
+            interpolation="bilinear"
+        )
+        img = tf.keras.utils.img_to_array(img)
+        dataset = tf.data.Dataset.from_tensors([img])
 
-    dataset = dataset.batch(1)
-    dataset = preprocessing(dataset)
+    dataset = preprocessing(dataset, training=False)
 
     if type == "h":
         classifier_path = os.path.join(config["classifier_save_path"], "hiragana", "1")
@@ -53,7 +58,7 @@ def predict(config: Dict, filepath: str, type: str):
 
     for i, img in enumerate(dataset):
         pred_rep = classifier(img)
-        pred_class = tf.squeeze(tf.argmax(get_pred(pred_rep))).numpy()
+        pred_class = tf.argmax(tf.squeeze(get_pred(pred_rep), axis=0)).numpy()
         pred_class = label_mapping[pred_class]
         pred_img = generator(pred_rep).numpy()
         input_img = img.numpy()
