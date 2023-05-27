@@ -52,6 +52,8 @@ batch_size: 32
 image_size: [76, 76]
 
 # training params
+embedding_dim: 32
+n_routings: 4
 classifier_training_epochs: 50
 generator_training_epochs: 50
 optimizer_config:
@@ -71,5 +73,6 @@ checkpoint_dir: "./checkpoints"
 classifier_save_path: ./saved_models/classifiers
 generator_save_path: ./saved_models/generators
 mapping_save_path: ./saved_models/mappings
+config_save_path: ./saved_models/config
 
 predictions_output_folder: ./predictions_outputs/

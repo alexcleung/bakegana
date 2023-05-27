@@ -27,9 +27,13 @@ def train(
     # Declare models
     hiragana_classifier = KanaClassifier(
         n_classes=len(label_mapping),
+        dim_output=config["embedding_dim"],
+        n_routings=config["n_routings"]
     )
     katakana_classifier = KanaClassifier(
         n_classes=len(label_mapping),
+        dim_output=config["embedding_dim"],
+        n_routings=config["n_routings"]
     )
 
     # Optimizers for classifiers
@@ -262,5 +266,11 @@ def train(
         os.makedirs(mapping_save_dir)
     with open(os.path.join(mapping_save_dir, "mapping.yaml"), "w") as stream:
         yaml.dump(label_mapping, stream, default_flow_style=False)
+
+    config_save_dir = os.path.join(config["config_save_path"], timestamp)
+    if not os.path.exists(config_save_dir):
+        os.makedirs(config_save_dir)
+    with open(os.path.join(config_save_dir, "config.yaml"), "w") as stream:
+        yaml.dump(config, stream, default_flow_style=False)
 
     return hiragana_classifier, katakana_classifier
