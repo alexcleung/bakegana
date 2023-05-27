@@ -150,38 +150,12 @@ def train(
     #########################################
     #            TRAINING LOOP              #
     ######################################### 
-    t0 = last_ckpt_time = time.localtime()
+    t0 = time.localtime()
     print(
         f"[{time.strftime('%Y-%m-%d %H:%M:%S', t0)}] "
         "Beginning classifier training for " 
         f"{config['classifier_training_epochs']} epochs."
     )
-
-    # Initialize checkpointing
-    hiragana_ckpt = tf.train.Checkpoint(
-        optimizer=hiragana_optimizer,
-        model=hiragana_classifier
-    )
-    hiragana_ckpt_mgr = tf.train.CheckpointManager(
-        checkpoint=hiragana_ckpt,
-        directory=os.path.join(config["checkpoint_dir"], "classifier", "hiragana"),
-        max_to_keep=1
-    )
-
-    katakana_ckpt = tf.train.Checkpoint(
-        optimizer=katakana_optimizer,
-        model=katakana_classifier
-    )
-    katakana_ckpt_mgr = tf.train.CheckpointManager(
-        checkpoint=katakana_ckpt,
-        directory=os.path.join(config["checkpoint_dir"], "classifier", "katakana"),
-        max_to_keep=1
-    )
-
-    if hiragana_ckpt_mgr.latest_checkpoint:
-        hiragana_ckpt.restore(hiragana_ckpt_mgr.latest_checkpoint)
-    if katakana_ckpt_mgr.latest_checkpoint:
-        katakana_ckpt.restore(katakana_ckpt_mgr.latest_checkpoint)
 
     # Train both classifiers at the same time.
     epochs_since_improvement = 0
@@ -234,16 +208,6 @@ def train(
         if epochs_since_improvement >= config["early_stopping_epochs_since_improvement"]:
             print("EARLY STOPPING")
             break
-
-        # CHECKPOINTING
-        if (time.mktime(time.localtime()) - time.mktime(last_ckpt_time)) >= config["checkpoint_interval"]:
-            last_ckpt_time = time.localtime()
-            print(
-                f"[{time.strftime('%Y-%m-%d %H:%M:%S', last_ckpt_time)}] "
-                f"Saving checkpoint at epoch {epoch}" 
-            )
-            hiragana_ckpt_mgr.save()
-            katakana_ckpt_mgr.save()
 
     print("Classifier training complete.")
 

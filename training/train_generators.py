@@ -207,38 +207,12 @@ def train(
     #########################################
     #          GENERATOR TRAINING           #
     #########################################
-    t0 = last_ckpt_time = time.localtime()
+    t0 = time.localtime()
     print(
         f"[{time.strftime('%Y-%m-%d %H:%M:%S', t0)}] "
         "Beginning generator training for " 
         f"{config['classifier_training_epochs']} epochs."
     )
-
-    # Initialize checkpointing
-    hiragana_to_katakana_ckpt = tf.train.Checkpoint(
-        optimizer=hiragana_to_katakana_optimizer,
-        model=katakana_generator
-    )
-    hiragana_to_katakana_mgr = tf.train.CheckpointManager(
-        checkpoint=hiragana_to_katakana_ckpt,
-        directory=os.path.join(config["checkpoint_dir"], "generator", "katakana"),
-        max_to_keep=1
-    )
-
-    katakana_to_hiragana_ckpt = tf.train.Checkpoint(
-        optimizer=katakana_to_hiragana_optimizer,
-        model=hiragana_generator
-    )
-    katakana_to_hiragana_mgr = tf.train.CheckpointManager(
-        checkpoint=katakana_to_hiragana_ckpt,
-        directory=os.path.join(config["checkpoint_dir"], "generator", "hiragana"),
-        max_to_keep=1
-    )
-
-    if hiragana_to_katakana_mgr.latest_checkpoint:
-        hiragana_to_katakana_ckpt.restore(hiragana_to_katakana_mgr.latest_checkpoint)
-    if katakana_to_hiragana_mgr.latest_checkpoint:
-        katakana_to_hiragana_ckpt.restore(katakana_to_hiragana_mgr.latest_checkpoint)
 
     # Dual training scheme
     epochs_since_improvement = 0
@@ -311,16 +285,6 @@ def train(
         if epochs_since_improvement >= config["early_stopping_epochs_since_improvement"]:
             print("EARLY STOPPING")
             break
-
-        # CHECKPOINTING
-        if (time.mktime(time.localtime()) - time.mktime(last_ckpt_time)) >= config["checkpoint_interval"]:
-            last_ckpt_time = time.localtime()
-            print(
-                f"[{time.strftime('%Y-%m-%d %H:%M:%S', last_ckpt_time)}] "
-                f"Saving checkpoint at epoch {epoch}" 
-            )
-            hiragana_to_katakana_mgr.save()
-            katakana_to_hiragana_mgr.save()
 
     print("Training Complete")
 
