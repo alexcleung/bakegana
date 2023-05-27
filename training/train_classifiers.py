@@ -158,55 +158,81 @@ def train(
     )
 
     # Train both classifiers at the same time.
-    epochs_since_improvement = 0
+    hiragana_epochs_since_improvement = 0
+    katakana_epochs_since_improvement = 0
+    train_hiragana = True
+    train_katakana = True
     for epoch in range(config["classifier_training_epochs"]):
         print(f"Start of epoch {epoch+1}")
 
-        hiragana_loss_metric.reset_state()
-        katakana_loss_metric.reset_state()
+        if train_hiragana:
+            hiragana_loss_metric.reset_state()
+        if train_katakana:
+            katakana_loss_metric.reset_state()
         for step, (hiragana_img, katakana_img, label) in enumerate(train_dataset):
-            hiragana_loss = hiragana_classifier_train_step(hiragana_img, label)
-            katakana_loss = katakana_classifier_train_step(katakana_img, label)
+            if train_hiragana:
+                hiragana_loss = hiragana_classifier_train_step(hiragana_img, label)
+            if train_katakana:
+                katakana_loss = katakana_classifier_train_step(katakana_img, label)
             
             # Log metrics
             if step % 10 == 0:
-                print(
-                    f"Epoch Loss on hiragana classifier: {hiragana_loss_metric.result():.4f}"
-                    " --- "
-                    f"Epoch Loss on katakana classifier: {katakana_loss_metric.result():.4f}"
-                    " --- "
-                    f"Batch Loss on hiragana classifier: {hiragana_loss:.4f}"
-                    " --- "
-                    f"Batch Loss on katakana classifier: {katakana_loss:.4f}"
-                )
+                if train_hiragana:
+                    print(
+                        f"Epoch Loss on hiragana classifier: {hiragana_loss_metric.result():.4f}"
+                        " --- "
+                        f"Batch Loss on hiragana classifier: {hiragana_loss:.4f}"
+                    )
+                if train_katakana:
+                    print(
+                        f"Epoch Loss on katakana classifier: {katakana_loss_metric.result():.4f}"
+                        " --- "
+                        f"Batch Loss on katakana classifier: {katakana_loss:.4f}"
+                    )
 
         # VALIDATION LOOP
         print("Calculating validation metrics")
-        hiragana_val_metric.reset_state()
-        katakana_val_metric.reset_state()
+        if train_hiragana:
+            hiragana_val_metric.reset_state()
+        if train_katakana:
+            katakana_val_metric.reset_state()
+
         for (hiragana_img, katakana_img, label) in val_dataset:
-            hiragana_classifier_val_step(hiragana_img, label)
-            katakana_classifier_val_step(katakana_img, label)
+            if train_hiragana:
+                hiragana_classifier_val_step(hiragana_img, label)
+            if train_katakana:
+                katakana_classifier_val_step(katakana_img, label)
 
-        print(
-            f"Val Accuracy of hiragana classifier {hiragana_val_metric.result():.4f}"
-            " --- "
-            f"Val Accuracy of katakana classifier {katakana_val_metric.result():.4f}"
-        )
+        if train_hiragana:
+            print(
+                f"Val Accuracy of hiragana classifier {hiragana_val_metric.result():.4f}"
+            )
+        if train_katakana:
+            print(
+                f"Val Accuracy of katakana classifier {katakana_val_metric.result():.4f}"
+            )
 
-        # EARLY STOPPAGE CONDITION
-        if (
-            (hiragana_val_metric.result() > best_result_hiragana_val_metric)
-            or (katakana_val_metric.result() > best_result_katakana_val_metric)
-        ):
+        # EARLY STOPPAGE CONDITIONS
+        if (hiragana_val_metric.result() > best_result_hiragana_val_metric):
             best_result_hiragana_val_metric = max(hiragana_val_metric.result(), best_result_hiragana_val_metric)
-            best_result_katakana_val_metric = max(katakana_val_metric.result(), best_result_katakana_val_metric)
-            epochs_since_improvement = 0
+            hiragana_epochs_since_improvement = 0
         else:
-            epochs_since_improvement +=1
+            hiragana_epochs_since_improvement += 1
 
-        if epochs_since_improvement >= config["early_stopping_epochs_since_improvement"]:
-            print("EARLY STOPPING")
+        if (katakana_val_metric.result() > best_result_katakana_val_metric):
+            best_result_katakana_val_metric = max(katakana_val_metric.result(), best_result_katakana_val_metric)
+            katakana_epochs_since_improvement = 0
+        else:
+            katakana_epochs_since_improvement += 1
+
+        if hiragana_epochs_since_improvement >= config["early_stopping_epochs_since_improvement"]:
+            print("STOPPING TRAINING OF HIRAGANA CLASSIFIER")
+            train_hiragana = False
+        if katakana_epochs_since_improvement >= config["early_stopping_epochs_since_improvement"]:
+            print("STOPPING TRAINING OF KATAKANA CLASSIFIER")
+            train_katakana = False
+
+        if not (train_hiragana or train_katakana):
             break
 
     print("Classifier training complete.")
