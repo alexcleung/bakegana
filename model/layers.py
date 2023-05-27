@@ -68,7 +68,7 @@ class CapsuleLayer(tf.keras.layers.Layer):
         self.n_input_capsule = input_shape[1]
         self.dim_input_capsule = input_shape[2]
 
-        # weight matrix
+        # weight and bias matrices
         # similar to normal FC layer where the input dim would be
         # equal to n_input_capsule * dim_input_capsule; and similarly
         # for the output dim.
@@ -82,6 +82,12 @@ class CapsuleLayer(tf.keras.layers.Layer):
             initializer='glorot_uniform',
             trainable=True,
             name="capsule_layer_weight"
+        )
+        self.B = self.add_weight(
+            shape=[self.n_capsule, self.dim_capsule],
+            initializer="zeros",
+            trainable=True,
+            name="capsule_layer_bias"
         )
 
     def call(self, inputs):
@@ -100,6 +106,7 @@ class CapsuleLayer(tf.keras.layers.Layer):
             tf.tile(self.W[tf.newaxis, :, :, :, :], [batch_size, 1, 1, 1, 1])
         )
         u = tf.squeeze(u, axis=-2) # [batch, n_input_capsule, n_capsule, dim_capsule]
+        u = u + self.B[tf.newaxis, tf.newaxis, :, :]
 
         # Dynamic Routing - coupling coefficients
         b = tf.zeros(shape=[batch_size, self.n_input_capsule, self.n_capsule], dtype=u.dtype)
