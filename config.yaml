@@ -52,8 +52,8 @@ batch_size: 32
 image_size: [76, 76]
 
 # training params
-embedding_dim: 32
-n_routings: 4
+embedding_dim: 16
+n_routings: 3
 classifier_training_epochs: 50
 generator_training_epochs: 50
 optimizer_config:
@@ -64,7 +64,7 @@ classification_loss_config:
 classification_val_metric: CategoricalAccuracy
 reconstruction_loss_fn: MeanSquaredError
 reconstruction_loss_config: {}
-reconstruction_loss_coef: 30
+reconstruction_loss_coef: 10
 early_stopping_epochs_since_improvement: 3
 
 checkpoint_interval: 1200 # 20 minutes
