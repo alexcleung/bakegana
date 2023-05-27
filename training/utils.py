@@ -37,3 +37,24 @@ def get_pred_and_label(capsule_reps, labels):
     y_true = tf.one_hot(labels, depth=n_classes, dtype=y_pred.dtype)
 
     return y_true, y_pred
+
+
+def apply_training_mask(capsule_reps, labels):
+    """
+    Apply a training mask on the capsule representations
+    for training the generators.
+
+    `capsule_reps`: Output from classifier.
+        Tensor of shape [batch, n_classes, dim_output]
+    `labels: Integer labels. 
+        Tensor of shape [batch]
+    Returns: Tensor of shape [batch, n_classes, dim_output]
+        Which is the same as `capsule_reps`, all zeros except
+        for the slice along the dimension 1 corresponding to
+        the correct label.
+    """
+    n_classes = tf.shape(capsule_reps)[1]
+
+    labels_one_hot = tf.one_hot(labels, depth=n_classes, dtype=capsule_reps.dtype)
+
+    return capsule_reps * labels_one_hot[:, :, tf.newaxis]

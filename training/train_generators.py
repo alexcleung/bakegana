@@ -8,7 +8,7 @@ from typing import Dict
 import tensorflow as tf
 
 from model.generator import KanaGenerator
-from .utils import get_pred_and_label
+from .utils import get_pred_and_label, apply_training_mask
 
 
 def train(
@@ -104,12 +104,14 @@ def train(
         with tf.GradientTape() as tape:
             # Classification of the generated sample.
             hiragana_reps = hiragana_classifier(hira_img, training=False)
+            hiragana_reps = apply_training_mask(hiragana_reps, lbl)
             katakana_gen = katakana_generator(hiragana_reps, training=True)
             katakana_pred = katakana_classifier(katakana_gen, training=False)
             y_true, y_pred = get_pred_and_label(katakana_pred, lbl)
             classification_loss = classification_loss_fn(y_true, y_pred)
 
             # Reconstruction
+            katakana_pred = apply_training_mask(katakana_pred, lbl)
             hiragana_recon = hiragana_generator(katakana_pred, training=True)
             reconstruction_loss = reconstruction_loss_fn(hira_img, hiragana_recon) * recon_loss_coef
             
@@ -146,12 +148,14 @@ def train(
         with tf.GradientTape() as tape:
             # Classification of the generated sample.
             katakana_reps = katakana_classifier(kata_img, training=False)
+            katakana_reps = apply_training_mask(katakana_reps, lbl)
             hiragana_gen = hiragana_generator(katakana_reps, training=True)
             hiragana_pred = hiragana_classifier(hiragana_gen, training=False)
             y_true, y_pred = get_pred_and_label(hiragana_pred, lbl)
             classification_loss = classification_loss_fn(y_true, y_pred)
 
             # Reconstruction
+            hiragana_pred = apply_training_mask(hiragana_pred, lbl)
             katakana_recon = katakana_generator(hiragana_pred, training=True)
             reconstruction_loss = reconstruction_loss_fn(kata_img, katakana_recon) * recon_loss_coef
             
