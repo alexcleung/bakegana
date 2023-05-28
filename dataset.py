@@ -46,7 +46,7 @@ def validate_subdirectories(data_dir: str, character: str):
 
 
 @tf.function
-def remove_noise(img):
+def remove_noise(img, mean=False):
     """
     Remove image noise by applying mean filter
     `img` is a Tensor of shape [batch, width, height, channels]
@@ -63,7 +63,18 @@ def remove_noise(img):
     )
     patches = tf.reshape(patches, tf.concat([img_shape, [-1]], axis=0))
 
-    return tf.reduce_mean(patches, axis=-1)
+    if mean:
+        patches = tf.reduce_mean(patches, axis=-1, keepdims=True)
+    else:
+        patches = tf.sort(patches, axis=-1)
+        median_idx = tf.math.ceil(img_shape[-1] / 2)
+        patches = tf.slice(
+            patches,
+            begin=tf.cast(tf.concat([[0,0,0,0], median_idx[tf.newaxis]], axis=0), tf.int32),
+            size=tf.concat([img_shape, [1]], axis=0)
+        )
+
+    return tf.squeeze(patches, axis=-1)
 
 
 def preprocessing(dataset, training=True):
