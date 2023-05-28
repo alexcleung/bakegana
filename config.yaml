@@ -66,6 +66,7 @@ classification_val_metric: CategoricalAccuracy
 reconstruction_loss_fn: MeanSquaredError
 reconstruction_loss_config: {}
 reconstruction_loss_coef: 10
+capsule_l2: 0.01
 mask_during_training: True
 reduce_lr_epochs_since_improvement: 2
 early_stopping_epochs_since_improvement: 3

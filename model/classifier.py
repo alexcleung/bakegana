@@ -16,17 +16,20 @@ class KanaClassifier(tf.keras.Model):
             self,
             n_classes: int,
             dim_output: int = 16,
-            n_routings: int = 3
+            n_routings: int = 3,
+            capsule_l2: float = 0.01
         ):
         """
         `n_classes`: Number of possible classes
         `dim_output`: Size of each class representation
         `n_routing`: Number of routing iterations (dynamic routing)
+        `capsule_l2`: L2 regularization on capsule representations
         """
         super().__init__()
         
         self.n_classes = n_classes
         self.n_routings = n_routings
+        self.capsule_regularizer = tf.keras.regularizers.L2(l2=capsule_l2)
 
         # Layers
         self.conv1 = tf.keras.layers.Conv2D(
@@ -66,6 +69,11 @@ class KanaClassifier(tf.keras.Model):
         x = self.conv2(x)
         x = self.conv3(x)
         x = self.primary_caps(x)
-        kana_reps = self.kana_caps(x)
+        kana_reps = self.kana_caps(x, training=training)
         
+        if training:
+            self.add_loss(
+                self.capsule_regularizer(kana_reps)
+            )
+
         return kana_reps

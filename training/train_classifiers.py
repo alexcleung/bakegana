@@ -28,12 +28,14 @@ def train(
     hiragana_classifier = KanaClassifier(
         n_classes=len(label_mapping),
         dim_output=config["embedding_dim"],
-        n_routings=config["n_routings"]
+        n_routings=config["n_routings"],
+        capsule_l2=config["capsule_l2"]
     )
     katakana_classifier = KanaClassifier(
         n_classes=len(label_mapping),
         dim_output=config["embedding_dim"],
-        n_routings=config["n_routings"]
+        n_routings=config["n_routings"],
+        capsule_l2=config["capsule_l2"]
     )
 
     # Optimizers for classifiers
@@ -91,7 +93,7 @@ def train(
         with tf.GradientTape() as tape:
             reps = hiragana_classifier(img, training=True)
             y_true, y_pred = get_true_and_pred(reps, lbl)
-            loss = loss_fn(y_true, y_pred)
+            loss = loss_fn(y_true, y_pred) + sum(hiragana_classifier.losses) # reg loss
 
         grads = tape.gradient(
             loss,
@@ -113,7 +115,7 @@ def train(
         with tf.GradientTape() as tape:
             reps = katakana_classifier(img, training=True)
             y_true, y_pred = get_true_and_pred(reps, lbl)
-            loss = loss_fn(y_true, y_pred)
+            loss = loss_fn(y_true, y_pred) + sum(katakana_classifier.losses) # reg loss
 
         grads = tape.gradient(
             loss,
