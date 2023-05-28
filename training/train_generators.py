@@ -57,6 +57,11 @@ def train(
     )
     reconstruction_loss_coef = config["reconstruction_loss_coef"]
 
+    sample_weight_scaling_fn = tf.keras.losses.CategoricalCrossentropy(
+        from_logits=True,
+        reduction=tf.keras.losses.Reduction.NONE
+    )
+
     hiragana_to_katakana_classification_loss_metric = tf.keras.metrics.get(
         {
             "class_name": config["classification_loss_fn"],
@@ -107,18 +112,29 @@ def train(
         with tf.GradientTape() as tape:
             # Classification of the generated sample.
             hiragana_reps = hiragana_classifier(hira_img, training=False)
+            hira_true, hira_pred = get_true_and_pred(hiragana_reps, lbl)
+            classification_sample_weight = tf.nn.softmax(sample_weight_scaling_fn(hira_true, hira_pred))
             if mask:
                 hiragana_reps = apply_training_mask(hiragana_reps, lbl)
             katakana_gen = katakana_generator(hiragana_reps, training=True)
             katakana_pred = katakana_classifier(katakana_gen, training=False)
             y_true, y_pred = get_true_and_pred(katakana_pred, lbl)
-            classification_loss = classification_loss_fn(y_true, y_pred)
+            classification_loss = classification_loss_fn(
+                y_true,
+                y_pred,
+                sample_weight=classification_sample_weight[:, tf.newaxis]
+            )
 
             # Reconstruction
+            reconstruction_sample_weight = tf.nn.softmax(sample_weight_scaling_fn(y_true, y_pred))
             if mask:
                 katakana_pred = apply_training_mask(katakana_pred, lbl)
             hiragana_recon = hiragana_generator(katakana_pred, training=True)
-            reconstruction_loss = reconstruction_loss_fn(hira_img, hiragana_recon) * recon_loss_coef
+            reconstruction_loss = reconstruction_loss_fn(
+                hira_img,
+                hiragana_recon,
+                sample_weight=reconstruction_sample_weight[:, tf.newaxis, tf.newaxis]
+            ) * recon_loss_coef
             
             total_loss = classification_loss + reconstruction_loss
         
@@ -153,18 +169,29 @@ def train(
         with tf.GradientTape() as tape:
             # Classification of the generated sample.
             katakana_reps = katakana_classifier(kata_img, training=False)
+            kata_true, kata_pred = get_true_and_pred(katakana_reps, lbl)
+            classification_sample_weight = tf.nn.softmax(sample_weight_scaling_fn(kata_true, kata_pred))
             if mask:
                 katakana_reps = apply_training_mask(katakana_reps, lbl)
             hiragana_gen = hiragana_generator(katakana_reps, training=True)
             hiragana_pred = hiragana_classifier(hiragana_gen, training=False)
             y_true, y_pred = get_true_and_pred(hiragana_pred, lbl)
-            classification_loss = classification_loss_fn(y_true, y_pred)
+            classification_loss = classification_loss_fn(
+                y_true,
+                y_pred,
+                sample_weight=classification_sample_weight[:, tf.newaxis]
+            )
 
             # Reconstruction
+            reconstruction_sample_weight = tf.nn.softmax(sample_weight_scaling_fn(y_true, y_pred))
             if mask:
                 hiragana_pred = apply_training_mask(hiragana_pred, lbl)
             katakana_recon = katakana_generator(hiragana_pred, training=True)
-            reconstruction_loss = reconstruction_loss_fn(kata_img, katakana_recon) * recon_loss_coef
+            reconstruction_loss = reconstruction_loss_fn(
+                kata_img,
+                katakana_recon,
+                sample_weight=reconstruction_sample_weight[:, tf.newaxis, tf.newaxis]
+            ) * recon_loss_coef
             
             total_loss = classification_loss + reconstruction_loss
         
