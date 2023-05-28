@@ -148,18 +148,6 @@ def preprocessing(dataset, crop_image=False, predict=None):
         num_parallel_calls=tf.data.AUTOTUNE
     )
     
-    # Increase contrast
-    dataset = dataset.map(
-        lambda *t: 
-            (
-                tf.image.adjust_contrast(t[0], 3),
-                tf.image.adjust_contrast(t[1], 3),
-                t[2]
-            ) if predict is None
-            else tf.image.adjust_contrast(t[0], 3),
-        num_parallel_calls=tf.data.AUTOTUNE
-    )
-
     # scale to 0 - 1
     dataset = dataset.map(
         lambda *t:
