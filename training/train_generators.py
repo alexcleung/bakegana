@@ -100,22 +100,26 @@ def train(
     ######################################### 
     # Wrap the training steps in tf.function for performance
 
+    mask_during_training = config["mask_during_training"]
+
     @tf.function
-    def hiragana_to_katakana_train_step(hira_img, lbl, recon_loss_coef):
+    def hiragana_to_katakana_train_step(hira_img, lbl, recon_loss_coef, mask):
         """
         Train Step for Hiragana -> Katakana
         """
         with tf.GradientTape() as tape:
             # Classification of the generated sample.
             hiragana_reps = hiragana_classifier(hira_img, training=False)
-            hiragana_reps = apply_training_mask(hiragana_reps, lbl)
+            if mask:
+                hiragana_reps = apply_training_mask(hiragana_reps, lbl)
             katakana_gen = katakana_generator(hiragana_reps, training=True)
             katakana_pred = katakana_classifier(katakana_gen, training=False)
             y_true, y_pred = get_pred_and_label(katakana_pred, lbl)
             classification_loss = classification_loss_fn(y_true, y_pred)
 
             # Reconstruction
-            katakana_pred = apply_training_mask(katakana_pred, lbl)
+            if mask:
+                katakana_pred = apply_training_mask(katakana_pred, lbl)
             hiragana_recon = hiragana_generator(katakana_pred, training=True)
             reconstruction_loss = reconstruction_loss_fn(hira_img, hiragana_recon) * recon_loss_coef
             
@@ -145,21 +149,23 @@ def train(
 
 
     @tf.function
-    def katakana_to_hiragana_train_step(kata_img, lbl, recon_loss_coef):
+    def katakana_to_hiragana_train_step(kata_img, lbl, recon_loss_coef, mask):
         """
         Train Step for Katakana -> Hiragana
         """
         with tf.GradientTape() as tape:
             # Classification of the generated sample.
             katakana_reps = katakana_classifier(kata_img, training=False)
-            katakana_reps = apply_training_mask(katakana_reps, lbl)
+            if mask:
+                katakana_reps = apply_training_mask(katakana_reps, lbl)
             hiragana_gen = hiragana_generator(katakana_reps, training=True)
             hiragana_pred = hiragana_classifier(hiragana_gen, training=False)
             y_true, y_pred = get_pred_and_label(hiragana_pred, lbl)
             classification_loss = classification_loss_fn(y_true, y_pred)
 
             # Reconstruction
-            hiragana_pred = apply_training_mask(hiragana_pred, lbl)
+            if mask:
+                hiragana_pred = apply_training_mask(hiragana_pred, lbl)
             katakana_recon = katakana_generator(hiragana_pred, training=True)
             reconstruction_loss = reconstruction_loss_fn(kata_img, katakana_recon) * recon_loss_coef
             
@@ -235,11 +241,21 @@ def train(
             (
                 hiragana_to_katakana_classification_loss,
                 hiragana_to_katakana_reconstruction_loss,
-            ) = hiragana_to_katakana_train_step(hiragana_img, label, reconstruction_loss_coef)
+            ) = hiragana_to_katakana_train_step(
+                    hiragana_img,
+                    label,
+                    reconstruction_loss_coef,
+                    mask_during_training
+                )
             (
                 katakana_to_hiragana_classification_loss,
                 katakana_to_hiragana_reconstruction_loss,
-            ) = katakana_to_hiragana_train_step(katakana_img, label, reconstruction_loss_coef)
+            ) = katakana_to_hiragana_train_step(
+                    katakana_img,
+                    label,
+                    reconstruction_loss_coef,
+                    mask_during_training
+                )
 
             # Log metrics
             if step % 10 == 0:
