@@ -87,7 +87,7 @@ if __name__ == "__main__":
 
         # Load the config from the model.
         with open(
-            os.path.join(config["mapping_save_path"], args.model_version, "config.yaml"),
+            os.path.join(config["config_save_path"], args.model_version, "config.yaml"),
             "r"
         ) as stream:
             config = yaml.safe_load(stream)
