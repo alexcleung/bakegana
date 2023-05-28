@@ -275,7 +275,7 @@ def train(
             f"Val Accuracy on generated Hiragana images {katakana_to_hiragana_val_metric.result():.4f}"
         )
 
-        # EARLY STOPPAGE CONDITION
+        # PLATEAU CONDITIONS
         if (
             (hiragana_to_katakana_val_metric.result() > best_result_hiragana_to_katakana_val_metric)
             or (katakana_to_hiragana_val_metric.result() > best_result_katakana_to_hiragana_val_metric)
@@ -285,6 +285,11 @@ def train(
             epochs_since_improvement = 0
         else:
             epochs_since_improvement +=1
+
+        if epochs_since_improvement >= config["reduce_lr_epochs_since_improvement"]:
+            print("HALVING LEARNING RATE")
+            hiragana_to_katakana_optimizer.lr.assign(hiragana_to_katakana_optimizer.lr/2)
+            katakana_to_hiragana_optimizer.lr.assign(katakana_to_hiragana_optimizer.lr/2)
 
         if epochs_since_improvement >= config["early_stopping_epochs_since_improvement"]:
             print("EARLY STOPPING")
