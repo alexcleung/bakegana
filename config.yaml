@@ -48,7 +48,7 @@ characters:
 
 # dataset
 data_dir: "./data/images"
-batch_size: 16
+batch_size: 32
 image_size: [76, 72]
 cropped_image_size: [52, 36]
 

@@ -6,3 +6,4 @@ saved_models/**
 predictions_outputs/**
 **/*.png
 checkpoints/**
+*.txt
