@@ -50,7 +50,7 @@ characters:
 data_dir: "./data/images"
 batch_size: 32
 image_size: [76, 72]
-cropped_image_size: [52, 36]
+crop_image: True
 
 # training params
 embedding_dim: 24

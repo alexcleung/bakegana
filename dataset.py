@@ -46,13 +46,17 @@ def validate_subdirectories(data_dir: str, character: str):
 
 
 @tf.function
-def remove_noise(img, mean=False):
+def remove_noise(img, mode="threshold"):
     """
     Remove image noise by applying mean filter
     `img` is a Tensor of shape [batch, height, width, channels]
     Returns a Tensor of same shape.
     """
     img_shape = tf.shape(img)
+
+    if mode == "threshold":
+        # hardcoded threshold
+        return 255 * tf.cast(img > 100, dtype=img.dtype)
 
     patches = tf.image.extract_patches(
         img,
@@ -63,9 +67,9 @@ def remove_noise(img, mean=False):
     )
     patches = tf.reshape(patches, tf.concat([img_shape, [-1]], axis=0))
 
-    if mean:
+    if mode == "mean":
         patches = tf.reduce_mean(patches, axis=-1, keepdims=True)
-    else:
+    else: # "median"
         patches = tf.sort(patches, axis=-1)
         median_idx = tf.math.ceil(img_shape[-1] / 2)
         patches = tf.slice(
@@ -78,7 +82,7 @@ def remove_noise(img, mean=False):
 
 
 @tf.function
-def crop_image(img, cropped_image_size, hiragana=False):
+def apply_crop(img, hiragana=False):
     """
     Crop to bounding box.
     Hiragana (ETLCDB-4) appears to have different bounding box
@@ -106,26 +110,27 @@ def crop_image(img, cropped_image_size, hiragana=False):
 
     return tf.image.resize(
         cropped,
-        size=cropped_image_size
+        size=(52, 36)
     )
 
 
-def preprocessing(dataset, cropped_image_size, predict=None):
+def preprocessing(dataset, crop_image=False, predict=None):
     """
     Apply preprocessing transformations to the dataset.
     """
 
     # Crop to bounding box
-    dataset = dataset.map(
-        lambda *t:
-            (
-                crop_image(t[0], cropped_image_size, hiragana=True),
-                crop_image(t[1], cropped_image_size, hiragana=False),
-                t[2]
-            ) if predict is None
-            else crop_image(t[0], cropped_image_size, hiragana=(predict=="h")),
-        num_parallel_calls=tf.data.AUTOTUNE
-    )
+    if crop_image is not None:
+        dataset = dataset.map(
+            lambda *t:
+                (
+                    apply_crop(t[0], hiragana=True),
+                    apply_crop(t[1], hiragana=False),
+                    t[2]
+                ) if predict is None
+                else apply_crop(t[0], hiragana=(predict=="h")),
+            num_parallel_calls=tf.data.AUTOTUNE
+        )
 
     # Invert - white characters on black background
     dataset = dataset.map(
@@ -191,7 +196,6 @@ def create_dataset(
     data_dir = config["data_dir"]
     characters = config["characters"]
     image_size = config["image_size"]
-    cropped_image_size = config["cropped_image_size"]
     batch_size = config["batch_size"]
 
     for c in characters:
@@ -256,8 +260,8 @@ def create_dataset(
     val_ds = val_ds.batch(batch_size, num_parallel_calls=tf.data.AUTOTUNE)
     
     # Preprocess
-    train_ds = preprocessing(train_ds, cropped_image_size=cropped_image_size)
-    val_ds = preprocessing(val_ds, cropped_image_size=cropped_image_size)
+    train_ds = preprocessing(train_ds, crop_image=config["crop_image"])
+    val_ds = preprocessing(val_ds, crop_image=config["crop_image"])
 
     # Performance optimization
     train_ds = train_ds.cache()

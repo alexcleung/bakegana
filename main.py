@@ -4,6 +4,7 @@ Entry point
 
 import argparse
 from datetime import datetime
+import os
 
 import yaml
 
@@ -83,6 +84,13 @@ if __name__ == "__main__":
             help="Number of times to apply the generator"
         )
         predict_parser.parse_known_args(namespace=args)
+
+        # Load the config from the model.
+        with open(
+            os.path.join(config["mapping_save_path"], args.model_version, "config.yaml"),
+            "r"
+        ) as stream:
+            config = yaml.safe_load(stream)
 
         predict(
             config,

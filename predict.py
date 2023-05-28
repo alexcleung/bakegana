@@ -40,7 +40,7 @@ def predict(config: Dict, model_version: str, filepath: str, kana_type: str, rep
 
     dataset = preprocessing(
         dataset,
-        cropped_image_size=config["cropped_image_size"],
+        crop_image=config["crop_image"],
         predict=kana_type
     )
 
