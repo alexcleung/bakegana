@@ -212,7 +212,7 @@ def train(
                 f"Val Accuracy of katakana classifier {katakana_val_metric.result():.4f}"
             )
 
-        # EARLY STOPPAGE CONDITIONS
+        # PLATEAU CONDITIONS
         if (hiragana_val_metric.result() > best_result_hiragana_val_metric):
             best_result_hiragana_val_metric = max(hiragana_val_metric.result(), best_result_hiragana_val_metric)
             hiragana_epochs_since_improvement = 0
@@ -225,10 +225,17 @@ def train(
         else:
             katakana_epochs_since_improvement += 1
 
-        if hiragana_epochs_since_improvement >= config["early_stopping_epochs_since_improvement"]:
+        if hiragana_epochs_since_improvement == config["reduce_lr_epochs_since_improvement"]:
+            print("HALVING LEARNING RATE FOR HIRAGANA CLASSIFIER")
+            hiragana_optimizer.lr.assign(hiragana_optimizer.lr/2)
+        if katakana_epochs_since_improvement == config["reduce_lr_epochs_since_improvement"]:
+            print("HALVING LEARNING RATE FOR KATAKANA CLASSIFIER")
+            katakana_optimizer.lr.assign(katakana_optimizer.lr/2)
+
+        if hiragana_epochs_since_improvement == config["early_stopping_epochs_since_improvement"]:
             print("STOPPING TRAINING OF HIRAGANA CLASSIFIER")
             train_hiragana = False
-        if katakana_epochs_since_improvement >= config["early_stopping_epochs_since_improvement"]:
+        if katakana_epochs_since_improvement == config["early_stopping_epochs_since_improvement"]:
             print("STOPPING TRAINING OF KATAKANA CLASSIFIER")
             train_katakana = False
 
