@@ -225,10 +225,10 @@ def train(
         else:
             katakana_epochs_since_improvement += 1
 
-        if hiragana_epochs_since_improvement >= config["early_stopping_epochs_since_improvement"]:
+        if hiragana_epochs_since_improvement == config["early_stopping_epochs_since_improvement"]:
             print("STOPPING TRAINING OF HIRAGANA CLASSIFIER")
             train_hiragana = False
-        if katakana_epochs_since_improvement >= config["early_stopping_epochs_since_improvement"]:
+        if katakana_epochs_since_improvement == config["early_stopping_epochs_since_improvement"]:
             print("STOPPING TRAINING OF KATAKANA CLASSIFIER")
             train_katakana = False
 
