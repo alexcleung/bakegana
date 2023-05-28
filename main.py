@@ -71,7 +71,7 @@ if __name__ == "__main__":
             help="Location of input image to run prediction/generation"
         )
         predict_parser.add_argument(
-            "--type",
+            "--kana_type",
             choices=["h", "k"],
             required=True,
             help="Type of input character image. h for hiragana, k for katakana"
@@ -88,6 +88,6 @@ if __name__ == "__main__":
             config,
             model_version=args.model_version,
             filepath=args.filepath,
-            type=args.type,
+            kana_type=args.kana_type,
             reps=args.reps
         )

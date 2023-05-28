@@ -27,8 +27,8 @@ def train(
     katakana_classifier.trainable=False
 
     # Declare models
-    hiragana_generator = KanaGenerator(image_shape=config["image_size"]+[1])
-    katakana_generator = KanaGenerator(image_shape=config["image_size"]+[1])
+    hiragana_generator = KanaGenerator(image_shape=config["cropped_image_size"]+[1])
+    katakana_generator = KanaGenerator(image_shape=config["cropped_image_size"]+[1])
 
     # Optimizers for generators
     hiragana_to_katakana_optimizer = tf.keras.optimizers.Adam(

@@ -49,7 +49,7 @@ def validate_subdirectories(data_dir: str, character: str):
 def remove_noise(img, mean=False):
     """
     Remove image noise by applying mean filter
-    `img` is a Tensor of shape [batch, width, height, channels]
+    `img` is a Tensor of shape [batch, height, width, channels]
     Returns a Tensor of same shape.
     """
     img_shape = tf.shape(img)
@@ -77,22 +77,68 @@ def remove_noise(img, mean=False):
     return tf.squeeze(patches, axis=-1)
 
 
-def preprocessing(dataset, training=True):
+@tf.function
+def crop_image(img, cropped_image_size, hiragana=False):
+    """
+    Crop to bounding box.
+    Hiragana (ETLCDB-4) appears to have different bounding box
+    than Katakana (ETLCDB-5).
+
+    The hiragana box is smaller - we resize the cropped katakana images
+    to match the hiragana box size.
+    """
+    if hiragana:
+        return tf.image.crop_to_bounding_box(
+            img,
+            offset_height=9,
+            offset_width=17,
+            target_height=52,
+            target_width=36,
+        )
+
+    cropped = tf.image.crop_to_bounding_box(
+        img,
+        offset_height=1,
+        offset_width=15,
+        target_height=65,
+        target_width=46,
+    )
+
+    return tf.image.resize(
+        cropped,
+        size=cropped_image_size
+    )
+
+
+def preprocessing(dataset, cropped_image_size, predict=None):
     """
     Apply preprocessing transformations to the dataset.
     """
 
+    # Crop to bounding box
+    dataset = dataset.map(
+        lambda *t:
+            (
+                crop_image(t[0], cropped_image_size, hiragana=True),
+                crop_image(t[1], cropped_image_size, hiragana=False),
+                t[2]
+            ) if predict is None
+            else crop_image(t[0], cropped_image_size, hiragana=(predict=="h")),
+        num_parallel_calls=tf.data.AUTOTUNE
+    )
+
     # Invert - white characters on black background
     dataset = dataset.map(
         lambda *t: 
-            (-1*t[0]+255,-1*t[1]+255, t[2]) if training
+            (-1*t[0]+255,-1*t[1]+255, t[2]) if predict is None
             else -1*t[0]+255,
         num_parallel_calls=tf.data.AUTOTUNE
     )
 
+    # Remove noise
     dataset = dataset.map(
         lambda *t:
-            (remove_noise(t[0]), remove_noise(t[1]), t[2]) if training
+            (remove_noise(t[0]), remove_noise(t[1]), t[2]) if predict is None
             else remove_noise(t[0]),
         num_parallel_calls=tf.data.AUTOTUNE
     )
@@ -101,18 +147,18 @@ def preprocessing(dataset, training=True):
     dataset = dataset.map(
         lambda *t: 
             (
-                tf.image.adjust_contrast(t[0], 4),
-                tf.image.adjust_contrast(t[1], 4),
+                tf.image.adjust_contrast(t[0], 3),
+                tf.image.adjust_contrast(t[1], 3),
                 t[2]
-            ) if training
-            else tf.image.adjust_contrast(t[0], 4),
+            ) if predict is None
+            else tf.image.adjust_contrast(t[0], 3),
         num_parallel_calls=tf.data.AUTOTUNE
     )
 
     # scale to 0 - 1
     dataset = dataset.map(
         lambda *t:
-            (t[0]/255, t[1]/255, t[2]) if training
+            (t[0]/255, t[1]/255, t[2]) if predict is None
             else t[0]/255,
         num_parallel_calls=tf.data.AUTOTUNE
     )
@@ -136,8 +182,8 @@ def create_dataset(
 
     Returns: 
         2 TF Datasets (train and val) that each yield 3 elements:
-            `hiragana_image`: Tensor of shape [batch, width, height, channels]
-            `katakana_image`: Tensor of shape [batch, width, height, channels]
+            `hiragana_image`: Tensor of shape [batch, height, width, channels]
+            `katakana_image`: Tensor of shape [batch, height, width, channels]
             `labels`: Tensor of shape [batch, 1] containing integer labels
 
         label mapping: Dictionary mapping integer label to string character.
@@ -145,6 +191,7 @@ def create_dataset(
     data_dir = config["data_dir"]
     characters = config["characters"]
     image_size = config["image_size"]
+    cropped_image_size = config["cropped_image_size"]
     batch_size = config["batch_size"]
 
     for c in characters:
@@ -209,8 +256,8 @@ def create_dataset(
     val_ds = val_ds.batch(batch_size, num_parallel_calls=tf.data.AUTOTUNE)
     
     # Preprocess
-    train_ds = preprocessing(train_ds)
-    val_ds = preprocessing(val_ds)
+    train_ds = preprocessing(train_ds, cropped_image_size=cropped_image_size)
+    val_ds = preprocessing(val_ds, cropped_image_size=cropped_image_size)
 
     # Performance optimization
     train_ds = train_ds.cache()

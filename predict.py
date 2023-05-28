@@ -13,7 +13,7 @@ import yaml
 from dataset import preprocessing
 from training.utils import get_pred
 
-def predict(config: Dict, model_version: str, filepath: str, type: str, reps: bool):
+def predict(config: Dict, model_version: str, filepath: str, kana_type: str, reps: bool):
     """
     Run Prediction
     """
@@ -38,9 +38,13 @@ def predict(config: Dict, model_version: str, filepath: str, type: str, reps: bo
         img = tf.keras.utils.img_to_array(img)
         dataset = tf.data.Dataset.from_tensors([img])
 
-    dataset = preprocessing(dataset, training=False)
+    dataset = preprocessing(
+        dataset,
+        cropped_image_size=config["cropped_image_size"],
+        predict=kana_type
+    )
 
-    if type == "h":
+    if kana_type == "h":
         classifier_path = os.path.join(config["classifier_save_path"], "hiragana", model_version)
         generator_path = os.path.join(config["generator_save_path"], "katakana", model_version)
     else:

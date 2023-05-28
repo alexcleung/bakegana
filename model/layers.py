@@ -36,7 +36,7 @@ class PrimaryCapsules(tf.keras.layers.Layer):
 
     def call(self, inputs):
         """
-        `inputs`: Tensor of shape [batch, width, height, channels]
+        `inputs`: Tensor of shape [batch, height, width, channels]
         Returns: Tensor of shape [batch, n_capsule, new_height * new_width * dim_capsule]
         """
         out = self.conv(inputs)

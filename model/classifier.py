@@ -55,7 +55,7 @@ class KanaClassifier(tf.keras.Model):
 
     def call(self, inputs, training=False):
         """
-        `inputs`: Tensor of shape [batch, width, height, channels]
+        `inputs`: Tensor of shape [batch, height, width, channels]
         Returns: 
             `kana_reps`: Tensor of shape [batch, n_classes, dim_output] representing the 
                 capsule representation for each class.

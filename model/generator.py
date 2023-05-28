@@ -14,7 +14,7 @@ class KanaGenerator(tf.keras.Model):
         image_shape: Tuple[int, int, int]
     ):
         """
-        `image_shape`: (width, height, channels)
+        `image_shape`: (height, width, channels)
         """
         super().__init__()
 
@@ -95,7 +95,7 @@ class KanaGenerator2(tf.keras.Model):
         image_shape: Tuple[int, int, int]
     ):
         """
-        `image_shape`: (width, height, channels)
+        `image_shape`: (height, width, channels)
         """
         super().__init__()
 
