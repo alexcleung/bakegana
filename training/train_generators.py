@@ -35,10 +35,7 @@ def train(
     )
 
     # Optimizers for generators
-    hiragana_to_katakana_optimizer = tf.keras.optimizers.Adam(
-        **config["optimizer_config"]
-    )
-    katakana_to_hiragana_optimizer = tf.keras.optimizers.Adam(
+    optimizer = tf.keras.optimizers.Adam(
         **config["optimizer_config"]
     )
 
@@ -132,7 +129,7 @@ def train(
                 + hiragana_generator.trainable_weights
             )
         )
-        hiragana_to_katakana_optimizer.apply_gradients(
+        optimizer.apply_gradients(
             zip(
                 grads,
                 ( # list concatenation of weights
@@ -178,7 +175,7 @@ def train(
                 + katakana_generator.trainable_weights
             )
         )
-        katakana_to_hiragana_optimizer.apply_gradients(
+        optimizer.apply_gradients(
             zip(
                 grads,
                 ( # list concatenation of weights
@@ -308,8 +305,7 @@ def train(
 
         if epochs_since_improvement >= config["reduce_lr_epochs_since_improvement"]:
             print("HALVING LEARNING RATE")
-            hiragana_to_katakana_optimizer.lr.assign(hiragana_to_katakana_optimizer.lr/2)
-            katakana_to_hiragana_optimizer.lr.assign(katakana_to_hiragana_optimizer.lr/2)
+            optimizer.lr.assign(optimizer.lr/2)
 
         if epochs_since_improvement >= config["early_stopping_epochs_since_improvement"]:
             print("EARLY STOPPING")

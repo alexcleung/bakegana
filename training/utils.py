@@ -18,6 +18,7 @@ def get_pred(capsule_reps):
         )
     )
 
+
 def get_pred_and_label(capsule_reps, labels):
     """
     Create y_pred and y_true to pass to tf.keras.losses.Loss
@@ -37,6 +38,28 @@ def get_pred_and_label(capsule_reps, labels):
     y_true = tf.one_hot(labels, depth=n_classes, dtype=y_pred.dtype)
 
     return y_true, y_pred
+
+
+def weight_to_correct_preds(y_true, y_pred):
+    """
+    `y_true`: Tensor of shape = [batch, n_classes]
+        Binary labels [0, 1]
+    `y_pred`: Tensor of shape = [batch, n_classes]
+        Logits for each class.
+
+    Returns: Tensor of shape [batch]
+        Where each value is:
+            0 where that batch sample was not correctly predicted
+            1/n_correct otherwise.
+        n_correct is the total number of correctly predicted batch samples.
+    """
+    correct = tf.cast(
+        tf.argmax(y_true, axis=-1) == tf.argmax(y_pred, axis=-1),
+        tf.float32
+    )
+    n_correct = tf.reduce_sum(correct)
+
+    return correct/n_correct
 
 
 def apply_training_mask(capsule_reps, labels):
