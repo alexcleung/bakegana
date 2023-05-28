@@ -19,7 +19,7 @@ def get_pred(capsule_reps):
     )
 
 
-def get_pred_and_label(capsule_reps, labels):
+def get_true_and_pred(capsule_reps, labels):
     """
     Create y_pred and y_true to pass to tf.keras.losses.Loss
 
@@ -40,7 +40,7 @@ def get_pred_and_label(capsule_reps, labels):
     return y_true, y_pred
 
 
-def weight_to_correct_preds(y_true, y_pred):
+def linear_weight_to_correct_preds(y_true, y_pred):
     """
     `y_true`: Tensor of shape = [batch, n_classes]
         Binary labels [0, 1]

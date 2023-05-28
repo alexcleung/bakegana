@@ -9,7 +9,7 @@ import tensorflow as tf
 import yaml
 
 from model.classifier import KanaClassifier
-from .utils import get_pred_and_label
+from .utils import get_true_and_pred
 
 
 def train(
@@ -90,7 +90,7 @@ def train(
         """
         with tf.GradientTape() as tape:
             reps = hiragana_classifier(img, training=True)
-            y_true, y_pred = get_pred_and_label(reps, lbl)
+            y_true, y_pred = get_true_and_pred(reps, lbl)
             loss = loss_fn(y_true, y_pred)
 
         grads = tape.gradient(
@@ -112,7 +112,7 @@ def train(
         """
         with tf.GradientTape() as tape:
             reps = katakana_classifier(img, training=True)
-            y_true, y_pred = get_pred_and_label(reps, lbl)
+            y_true, y_pred = get_true_and_pred(reps, lbl)
             loss = loss_fn(y_true, y_pred)
 
         grads = tape.gradient(
@@ -133,7 +133,7 @@ def train(
         Validation Step for Hiragana Classifier
         """
         reps = hiragana_classifier(img, training=False)
-        y_true, y_pred = get_pred_and_label(reps, lbl)
+        y_true, y_pred = get_true_and_pred(reps, lbl)
         hiragana_val_metric.update_state(y_true, y_pred)
 
 
@@ -143,7 +143,7 @@ def train(
         Validation Step for Katakana Classifier
         """
         reps = katakana_classifier(img, training=False)
-        y_true, y_pred = get_pred_and_label(reps, lbl)
+        y_true, y_pred = get_true_and_pred(reps, lbl)
         katakana_val_metric.update_state(y_true, y_pred)
 
 
