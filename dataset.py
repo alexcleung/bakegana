@@ -45,6 +45,27 @@ def validate_subdirectories(data_dir: str, character: str):
     )
 
 
+@tf.function
+def remove_noise(img):
+    """
+    Remove image noise by applying mean filter
+    `img` is a Tensor of shape [batch, width, height, channels]
+    Returns a Tensor of same shape.
+    """
+    img_shape = tf.shape(img)
+
+    patches = tf.image.extract_patches(
+        img,
+        sizes=[1, 3, 3, 1],
+        strides=[1, 1, 1, 1],
+        rates=[1, 1, 1, 1],
+        padding="SAME"
+    )
+    patches = tf.reshape(patches, tf.concat([img_shape, [-1]], axis=0))
+
+    return tf.reduce_mean(patches, axis=-1)
+
+
 def preprocessing(dataset, training=True):
     """
     Apply preprocessing transformations to the dataset.
@@ -55,6 +76,13 @@ def preprocessing(dataset, training=True):
         lambda *t: 
             (-1*t[0]+255,-1*t[1]+255, t[2]) if training
             else -1*t[0]+255,
+        num_parallel_calls=tf.data.AUTOTUNE
+    )
+
+    dataset = dataset.map(
+        lambda *t:
+            (remove_noise(t[0]), remove_noise(t[1]), t[2]) if training
+            else remove_noise(t[0]),
         num_parallel_calls=tf.data.AUTOTUNE
     )
     
