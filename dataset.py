@@ -120,7 +120,7 @@ def preprocessing(dataset, crop_image=False, predict=None):
     """
 
     # Crop to bounding box
-    if crop_image is not None:
+    if crop_image:
         dataset = dataset.map(
             lambda *t:
                 (
