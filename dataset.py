@@ -46,7 +46,7 @@ def validate_subdirectories(data_dir: str, character: str):
 
 
 @tf.function
-def remove_noise(img, mode="threshold"):
+def remove_noise(img, threshold, mode="mean"):
     """
     Remove image noise by applying mean filter
     `img` is a Tensor of shape [batch, height, width, channels]
@@ -54,12 +54,11 @@ def remove_noise(img, mode="threshold"):
     """
     img_shape = tf.shape(img)
 
-    if mode == "threshold":
-        # hardcoded threshold
-        return 255 * tf.cast(img > 100, dtype=img.dtype)
+    # hardcoded threshold
+    new_img = 255 * tf.cast(img > threshold, dtype=img.dtype)
 
     patches = tf.image.extract_patches(
-        img,
+        new_img,
         sizes=[1, 3, 3, 1],
         strides=[1, 1, 1, 1],
         rates=[1, 1, 1, 1],
@@ -143,7 +142,12 @@ def preprocessing(dataset, crop_image=False, predict=None):
     # Remove noise
     dataset = dataset.map(
         lambda *t:
-            (remove_noise(t[0]), remove_noise(t[1]), t[2]) if predict is None
+            (
+                # different datasets, different thresholds
+                remove_noise(t[0], 100),
+                remove_noise(t[1], 70),
+                t[2]
+            ) if predict is None
             else remove_noise(t[0]),
         num_parallel_calls=tf.data.AUTOTUNE
     )
