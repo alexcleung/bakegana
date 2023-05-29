@@ -148,7 +148,7 @@ def preprocessing(dataset, crop_image=False, predict=None):
                 remove_noise(t[1], 70),
                 t[2]
             ) if predict is None
-            else remove_noise(t[0]),
+            else remove_noise(t[0], 100 if predict=="h" else 70),
         num_parallel_calls=tf.data.AUTOTUNE
     )
     
