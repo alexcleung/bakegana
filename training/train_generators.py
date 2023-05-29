@@ -112,6 +112,8 @@ def train(
         with tf.GradientTape() as tape:
             # Classification of the generated sample.
             hiragana_reps = hiragana_classifier(hira_img, training=False)
+            hira_true, hira_pred = get_true_and_pred(hiragana_reps, lbl)
+            classification_sample_weight = tf.nn.softmax(sample_weight_scaling_fn(hira_true, hira_pred))
             if mask:
                 hiragana_reps = apply_training_mask(hiragana_reps, lbl)
             katakana_gen = katakana_generator(hiragana_reps, training=True)
@@ -120,6 +122,7 @@ def train(
             classification_loss = classification_loss_fn(
                 y_true,
                 y_pred,
+                sample_weight=classification_sample_weight[:, tf.newaxis]
             )
 
             # Reconstruction
@@ -166,6 +169,8 @@ def train(
         with tf.GradientTape() as tape:
             # Classification of the generated sample.
             katakana_reps = katakana_classifier(kata_img, training=False)
+            kata_true, kata_pred = get_true_and_pred(katakana_reps, lbl)
+            classification_sample_weight = tf.nn.softmax(sample_weight_scaling_fn(kata_true, kata_pred))
             if mask:
                 katakana_reps = apply_training_mask(katakana_reps, lbl)
             hiragana_gen = hiragana_generator(katakana_reps, training=True)
@@ -174,6 +179,7 @@ def train(
             classification_loss = classification_loss_fn(
                 y_true,
                 y_pred,
+                sample_weight=classification_sample_weight[:, tf.newaxis]
             )
 
             # Reconstruction
