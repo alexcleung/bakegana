@@ -56,7 +56,7 @@ crop_image: True
 embedding_dim: 24
 n_routings: 3
 classifier_training_epochs: 50
-generator_training_epochs: 50
+generator_training_epochs: 25
 optimizer_config:
   learning_rate: 0.001
 classification_loss_fn: CategoricalCrossentropy
