@@ -28,10 +28,10 @@ class KanaGenerator(tf.keras.Model):
             image_shape[0]*image_shape[1]*image_shape[2],
             activation="relu"
         )
+        self.bn0 = tf.keras.layers.BatchNormalization()
         self.reshape_2 = tf.keras.layers.Reshape(
             image_shape
         )
-        self.bn = tf.keras.layers.BatchNormalization()
         self.deconv1 = tf.keras.layers.Conv2DTranspose(
             filters=32,
             kernel_size=3,
@@ -39,6 +39,7 @@ class KanaGenerator(tf.keras.Model):
             padding="same",
             activation="relu"
         )
+        self.bn1 = tf.keras.layers.BatchNormalization()
         self.deconv2 = tf.keras.layers.Conv2DTranspose(
             filters=16,
             kernel_size=3,
@@ -46,6 +47,7 @@ class KanaGenerator(tf.keras.Model):
             padding="same",
             activation="relu"
         )
+        self.bn2 = tf.keras.layers.BatchNormalization()
         self.deconv3 = tf.keras.layers.Conv2DTranspose(
             filters=8,
             kernel_size=3,
@@ -53,6 +55,7 @@ class KanaGenerator(tf.keras.Model):
             padding="same",
             activation="relu"
         )
+        self.bn3 = tf.keras.layers.BatchNormalization()
         self.deconv4 = tf.keras.layers.Conv2DTranspose(
             filters=4,
             kernel_size=3,
@@ -60,6 +63,7 @@ class KanaGenerator(tf.keras.Model):
             padding="same",
             activation="relu"
         )
+        self.bn4 = tf.keras.layers.BatchNormalization()
         self.deconv5 = tf.keras.layers.Conv2DTranspose(
             filters=1,
             kernel_size=3,
@@ -75,12 +79,16 @@ class KanaGenerator(tf.keras.Model):
         """
         x = self.reshape_1(inputs)
         x = self.fc(x)
+        x = self.bn0(x, training=training)
         x = self.reshape_2(x)
-        x = self.bn(x, training=training)
         x = self.deconv1(x)
+        x = self.bn1(x, training=training)
         x = self.deconv2(x)
+        x = self.bn2(x, training=training)
         x = self.deconv3(x)
+        x = self.bn3(x, training=training)
         x = self.deconv4(x)
+        x = self.bn4(x, training=training)
         x = self.deconv5(x)
 
         return x

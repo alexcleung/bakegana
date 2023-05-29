@@ -37,23 +37,27 @@ class KanaClassifier(tf.keras.Model):
             kernel_size=3,
             activation='relu',
         )
+        self.bn1 = tf.keras.layers.BatchNormalization()
         self.conv2 = tf.keras.layers.Conv2D(
             filters=128,
             kernel_size=3,
             activation='relu',
         )
+        self.bn2 = tf.keras.layers.BatchNormalization()
         self.conv3 = tf.keras.layers.Conv2D(
             filters=256,
             kernel_size=3,
             strides=2,
             activation='relu',
         )
+        self.bn3 = tf.keras.layers.BatchNormalization()
         self.primary_caps = PrimaryCapsules(
             dim_capsule=8,
             n_capsule=32,
             kernel_size=9,
             strides=2
         )
+        self.bn4 = tf.keras.layers.BatchNormalization()
         self.kana_caps = CapsuleLayer(n_capsule=n_classes, dim_capsule=dim_output, n_routings=n_routings)
 
     def call(self, inputs, training=False):
@@ -66,9 +70,13 @@ class KanaClassifier(tf.keras.Model):
                 unnormalized probabilities of each class.
         """
         x = self.conv1(inputs)
+        x = self.bn1(x, training=training)
         x = self.conv2(x)
+        x = self.bn2(x, training=training)
         x = self.conv3(x)
+        x = self.bn3(x, training=training)
         x = self.primary_caps(x)
+        x = self.bn4(x, training=training)
         kana_reps = self.kana_caps(x, training=training)
         
         if training:
