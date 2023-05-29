@@ -129,6 +129,7 @@ def train(
             reconstruction_sample_weight = tf.nn.softmax(sample_weight_scaling_fn(y_true, y_pred))
             if mask:
                 katakana_pred = apply_training_mask(katakana_pred, lbl)
+            katakana_pred = tf.stop_gradient(katakana_pred) # reconstruction loss should not backprop to hira generator
             hiragana_recon = hiragana_generator(katakana_pred, training=True)
             reconstruction_loss = reconstruction_loss_fn(
                 hira_img,
@@ -186,6 +187,7 @@ def train(
             reconstruction_sample_weight = tf.nn.softmax(sample_weight_scaling_fn(y_true, y_pred))
             if mask:
                 hiragana_pred = apply_training_mask(hiragana_pred, lbl)
+            hiragana_pred = tf.stop_gradient(hiragana_pred) # reconstruction loss should not backprop to kata generator
             katakana_recon = katakana_generator(hiragana_pred, training=True)
             reconstruction_loss = reconstruction_loss_fn(
                 kata_img,
