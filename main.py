@@ -83,6 +83,12 @@ if __name__ == "__main__":
             default=1,
             help="Number of times to apply the generator"
         )
+        predict_parser.add_argument(
+            "--loops",
+            type=int,
+            default=1,
+            help="Number of times to apply the generator"
+        )
         predict_parser.parse_known_args(namespace=args)
 
         # Load the config from the model.
@@ -97,5 +103,6 @@ if __name__ == "__main__":
             model_version=args.model_version,
             filepath=args.filepath,
             kana_type=args.kana_type,
-            reps=args.reps
+            reps=args.reps,
+            loops=args.loops
         )
