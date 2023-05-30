@@ -114,7 +114,9 @@ class KanaGenerator2(tf.keras.Model):
             [-1]
         )
         self.fc1 = tf.keras.layers.Dense(512, activation="relu")
+        self.bn1 = tf.keras.layers.BatchNormalization()
         self.fc2 = tf.keras.layers.Dense(1024, activation="relu")
+        self.bn2 = tf.keras.layers.BatchNormalization()
         self.fc3 = tf.keras.layers.Dense(
             image_shape[0]*image_shape[1]*image_shape[2],
             activation="sigmoid"
@@ -128,7 +130,9 @@ class KanaGenerator2(tf.keras.Model):
         """
         x = self.reshape_1(inputs)
         x = self.fc1(x)
+        x = self.bn1(x, training=training)
         x = self.fc2(x)
+        x = self.bn2(x, training=training)
         x = self.fc3(x)
         x = self.reshape_2(x)
 

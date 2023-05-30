@@ -144,11 +144,11 @@ def preprocessing(dataset, crop_image=False, predict=None):
         lambda *t:
             (
                 # different datasets, different thresholds
-                remove_noise(t[0], 100),
+                remove_noise(t[0], 95),
                 remove_noise(t[1], 70),
                 t[2]
             ) if predict is None
-            else remove_noise(t[0], 100 if predict=="h" else 70),
+            else remove_noise(t[0], 95 if predict=="h" else 70),
         num_parallel_calls=tf.data.AUTOTUNE
     )
     

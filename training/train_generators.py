@@ -7,7 +7,7 @@ from typing import Dict
 
 import tensorflow as tf
 
-from model.generator import KanaGenerator
+from model.generator import KanaGenerator2 as KanaGenerator
 from .utils import get_true_and_pred, apply_training_mask
 
 
