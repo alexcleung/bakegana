@@ -67,7 +67,8 @@ def remove_noise(img, threshold, mode="mean"):
     patches = tf.reshape(patches, tf.concat([img_shape, [-1]], axis=0))
 
     if mode == "mean":
-        patches = tf.reduce_mean(patches, axis=-1, keepdims=True)
+        kernel = tf.constant([0.075, 0.075, 0.075, 0.075, 0.4, 0.075, 0.075, 0.075, 0.075], dtype=patches.dtype)
+        patches = tf.reduce_sum(patches*kernel[tf.newaxis, tf.newaxis, tf.newaxis, tf.newaxis, :], axis=-1, keepdims=True)
     else: # "median"
         patches = tf.sort(patches, axis=-1)
         median_idx = tf.math.ceil(img_shape[-1] / 2)
