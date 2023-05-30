@@ -332,9 +332,9 @@ def train(
         else:
             epochs_since_improvement +=1
 
-        if epochs_since_improvement >= config["reduce_lr_epochs_since_improvement"]:
-            print("HALVING LEARNING RATE")
-            optimizer.lr.assign(optimizer.lr/2)
+        # if epochs_since_improvement >= config["reduce_lr_epochs_since_improvement"]:
+        #     print("HALVING LEARNING RATE")
+        #     optimizer.lr.assign(optimizer.lr/2)
 
         # if epochs_since_improvement >= config["early_stopping_epochs_since_improvement"]:
         #     print("EARLY STOPPING")
