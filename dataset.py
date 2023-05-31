@@ -2,7 +2,9 @@
 Dataset processing functions
 """
 import glob
+import itertools
 import os
+import random
 from typing import Dict
 
 import tensorflow as tf
@@ -43,6 +45,8 @@ def validate_subdirectories(data_dir: str, character: str):
         f" and {len(katakana_images)} katakana_images" 
         f" for character {character}"
     )
+
+    return hiragana_images, katakana_images
 
 
 @tf.function
@@ -253,6 +257,126 @@ def create_dataset(
     val_ds = val_ds.batch(batch_size, num_parallel_calls=tf.data.AUTOTUNE)
     
     # Preprocess
+    train_ds = preprocessing(train_ds, crop_image=config["crop_image"])
+    val_ds = preprocessing(val_ds, crop_image=config["crop_image"])
+
+    # Performance optimization
+    train_ds = train_ds.cache()
+    val_ds = val_ds.cache()
+    train_ds = train_ds.prefetch(tf.data.AUTOTUNE)
+    val_ds = val_ds.prefetch(tf.data.AUTOTUNE)
+
+    return train_ds, val_ds, label_mapping
+
+
+def load_img_to_array(filepath):
+    """
+    Loads image from filepath
+    """
+    img = tf.image.decode_png(
+        tf.io.read_file(filepath),
+        channels=1
+    )
+    
+    return tf.cast(img, tf.float32)
+
+def create_dataset_v2(
+    config: Dict
+):
+    """
+    Create a TF Dataset of images of kana `characters`.
+
+    `config` is a dictionary containing:
+        `data_dir`: Top level directory containing a subdirectory for each
+            hiragana/katakana character. The subdirectories are named using
+            the unicode for each character.
+        `characters`: the romanized character for each kana to be included in
+            in the dataset.
+        `batch_size`: batch size of the dataset
+
+    Returns: 
+        2 TF Datasets (train and val) that each yield 3 elements:
+            `hiragana_image`: Tensor of shape [batch, height, width, channels]
+            `katakana_image`: Tensor of shape [batch, height, width, channels]
+            `labels`: Tensor of shape [batch, 1] containing integer labels
+
+        label mapping: Dictionary mapping integer label to string character.
+    """
+
+    data_dir = config["data_dir"]
+    characters = config["characters"]
+    batch_size = config["batch_size"]
+
+    label_mapping = {}
+    all_train_pairs = []
+    all_val_pairs = []
+    for i, c in enumerate(characters):
+        hiragana_files, katakana_files = validate_subdirectories(data_dir, c)
+        random.shuffle(hiragana_files)
+        random.shuffle(katakana_files)
+
+        train_num = int(len(hiragana_files)*.9)
+        hiragana_files_train = hiragana_files[:train_num]
+        hiragana_files_val = hiragana_files[train_num:]
+        katakana_files_train = katakana_files[:train_num]
+        katakana_files_val = katakana_files[train_num:]
+        
+        train_pairs = itertools.product(hiragana_files_train, katakana_files_train)
+        val_pairs = itertools.product(hiragana_files_val, katakana_files_val)
+        label_iter = itertools.repeat(i)
+        
+        # shuffle - not memory efficient but whatever, dataset is small
+        train_pairs = list(train_pairs)
+        val_pairs = list(val_pairs)
+        random.shuffle(train_pairs)
+        random.shuffle(val_pairs)
+
+        train_pairs = ((h, k, l) for (h, k), l in zip(train_pairs, label_iter))
+        val_pairs = ((h, k, l) for (h, k), l in zip(val_pairs, label_iter))
+
+        all_train_pairs.append(train_pairs)
+        all_val_pairs.append(val_pairs)
+        label_mapping[i] = c
+
+    all_train_pairs = itertools.chain(*all_train_pairs)
+    all_val_pairs = itertools.chain(*all_val_pairs)
+
+    def train_gen():
+        for p in all_train_pairs:
+            yield p
+
+    def val_gen():
+        for p in all_val_pairs:
+            yield p
+
+    # Load the images
+    train_ds = tf.data.Dataset.from_generator(
+        generator=train_gen,
+        output_types = (tf.string, tf.string, tf.int32)
+    )
+    val_ds = tf.data.Dataset.from_generator(
+        generator=val_gen,
+        output_types = (tf.string, tf.string, tf.int32)
+    )
+
+    train_ds = train_ds.map(
+        lambda h, k, l: (
+            load_img_to_array(h),
+            load_img_to_array(k),
+            l
+        )
+    )
+    val_ds = val_ds.map(
+        lambda h, k, l: (
+            load_img_to_array(h),
+            load_img_to_array(k),
+            l
+        )
+    )
+
+    train_ds = train_ds.batch(batch_size, num_parallel_calls=tf.data.AUTOTUNE)
+    val_ds = val_ds.batch(batch_size, num_parallel_calls=tf.data.AUTOTUNE)
+
     train_ds = preprocessing(train_ds, crop_image=config["crop_image"])
     val_ds = preprocessing(val_ds, crop_image=config["crop_image"])
 
