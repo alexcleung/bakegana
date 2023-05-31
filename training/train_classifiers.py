@@ -9,7 +9,8 @@ import tensorflow as tf
 import yaml
 
 from model.classifier import KanaClassifier
-from .utils import get_true_and_pred
+from model.generator import KanaGenerator
+from .utils import get_true_and_pred, apply_training_mask
 
 
 def train(
@@ -37,6 +38,12 @@ def train(
         n_routings=config["n_routings"],
         capsule_l2=config["capsule_l2"]
     )
+    hiragana_generator = KanaGenerator(
+        image_shape=([52,36] if config["crop_image"] else config["image_size"])+[1]
+        )
+    katakana_generator = KanaGenerator(
+        image_shape=([52,36] if config["crop_image"] else config["image_size"])+[1]
+    )
 
     # Optimizers for classifiers
     hiragana_optimizer = tf.keras.optimizers.Adam(
@@ -50,12 +57,19 @@ def train(
     #       LOSS FUNCTION AND METRICS       #
     #########################################
     # Metrics are resetted every epoch. 
-    loss_fn = tf.keras.losses.get(
+    class_loss_fn = tf.keras.losses.get(
         {
             "class_name": config["classification_loss_fn"],
             "config": config["classification_loss_config"]
         }
     )
+    recon_loss_fn = tf.keras.losses.get(
+        {
+            "class_name": config["reconstruction_loss_fn"],
+            "config": config["reconstruction_loss_config"]
+        }
+    )
+    recon_reg_coef = config["reconstruction_reg_coef"]
 
     hiragana_loss_metric = tf.keras.metrics.get(
         {
@@ -93,11 +107,20 @@ def train(
         with tf.GradientTape() as tape:
             reps = hiragana_classifier(img, training=True)
             y_true, y_pred = get_true_and_pred(reps, lbl)
-            loss = loss_fn(y_true, y_pred) + sum(hiragana_classifier.losses) # reg loss
+            reps = apply_training_mask(reps, lbl)
+            recon = hiragana_generator(reps)
+            loss = (
+                class_loss_fn(y_true, y_pred)
+                + sum(hiragana_classifier.losses) # reg loss
+                + recon_loss_fn(img, recon) * recon_reg_coef
+            )
 
         grads = tape.gradient(
             loss,
-            hiragana_classifier.trainable_weights
+            ( # list concat
+                hiragana_classifier.trainable_weights
+                + hiragana_generator.trainable_weights
+            )
         )
         hiragana_optimizer.apply_gradients(
             zip(grads, hiragana_classifier.trainable_weights)
@@ -115,11 +138,20 @@ def train(
         with tf.GradientTape() as tape:
             reps = katakana_classifier(img, training=True)
             y_true, y_pred = get_true_and_pred(reps, lbl)
-            loss = loss_fn(y_true, y_pred) + sum(katakana_classifier.losses) # reg loss
+            reps = apply_training_mask(reps, lbl)
+            recon = katakana_generator(reps)
+            loss = (
+                class_loss_fn(y_true, y_pred)
+                + sum(hiragana_classifier.losses) # reg loss
+                + recon_loss_fn(img, recon) * recon_reg_coef
+            )
 
         grads = tape.gradient(
             loss,
-            katakana_classifier.trainable_weights
+            ( # list concat
+                katakana_classifier.trainable_weights
+                + katakana_generator.trainable_weights
+            )
         )
         katakana_optimizer.apply_gradients(
             zip(grads, katakana_classifier.trainable_weights)
