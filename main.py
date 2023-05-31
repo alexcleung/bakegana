@@ -13,6 +13,7 @@ from sample_dataset import sample_dataset
 from training.train_classifiers import train as train_classifiers
 from training.train_generators import train as train_generators
 from predict import predict
+from visualize_capsules import visualize_capsules
 
 if __name__ == "__main__":
     args = argparse.Namespace()
@@ -20,7 +21,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--mode",
-        choices=["sample_dataset", "train", "predict"]
+        choices=["sample_dataset", "train", "predict", "visualize_capsules"]
     )
     parser.parse_known_args(namespace=args)
 
@@ -57,7 +58,7 @@ if __name__ == "__main__":
             timestamp=timestamp
         )
 
-    else:
+    elif args.mode == "predict":
         predict_parser = argparse.ArgumentParser()
         predict_parser.add_argument(
             "--model_version",
@@ -105,4 +106,32 @@ if __name__ == "__main__":
             kana_type=args.kana_type,
             reps=args.reps,
             loops=args.loops
+        )
+    
+    else:
+        vis_parser = argparse.ArgumentParser()
+        vis_parser.add_argument(
+            "--model_version",
+            type=str,
+            required=True,
+            help="Model version to use"
+        )
+        vis_parser.add_argument(
+            "--filepath",
+            type=str,
+            required=True,
+            help="Location of input image to run visualization"
+        )
+        vis_parser.add_argument(
+            "--kana_type",
+            choices=["h", "k"],
+            required=True,
+            help="Type of input character image. h for hiragana, k for katakana"
+        )
+
+        visualize_capsules(
+            config,
+            model_version=args.model_version,
+            filepath=args.filepath,
+            kana_type=args.kana_type,
         )

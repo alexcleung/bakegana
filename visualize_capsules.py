@@ -13,7 +13,7 @@ import yaml
 from dataset import preprocessing
 from training.utils import get_pred
 
-def visualize_capsules(config: Dict, model_version: str, filepath: str, kana_type: str, reps: int, loops: bool):
+def visualize_capsules(config: Dict, model_version: str, filepath: str, kana_type: str):
     """
     Visualize the capsule activations on a given input.
     """
