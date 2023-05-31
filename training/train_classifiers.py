@@ -142,7 +142,7 @@ def train(
             recon = katakana_generator(reps)
             loss = (
                 class_loss_fn(y_true, y_pred)
-                + sum(hiragana_classifier.losses) # reg loss
+                + sum(katakana_classifier.losses) # reg loss
                 + recon_loss_fn(img, recon) * recon_coef
             )
 
