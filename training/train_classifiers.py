@@ -109,11 +109,12 @@ def train(
             y_true, y_pred = get_true_and_pred(reps, lbl)
             reps = apply_training_mask(reps, lbl)
             recon = hiragana_generator(reps)
-            loss = (
-                class_loss_fn(y_true, y_pred)
-                + sum(hiragana_classifier.losses) # reg loss
-                + recon_loss_fn(img, recon) * recon_coef
+            class_loss, reg_loss, recon_loss = (
+                class_loss_fn(y_true, y_pred),
+                sum(hiragana_classifier.losses),
+                recon_loss_fn(img, recon) * recon_coef
             )
+            loss = class_loss + reg_loss + recon_loss
 
         grads = tape.gradient(
             loss,
@@ -127,7 +128,7 @@ def train(
         )
         hiragana_loss_metric.update_state(y_true, y_pred)
 
-        return loss
+        return loss, class_loss, reg_loss, recon_loss
     
 
     @tf.function
@@ -140,11 +141,12 @@ def train(
             y_true, y_pred = get_true_and_pred(reps, lbl)
             reps = apply_training_mask(reps, lbl)
             recon = katakana_generator(reps)
-            loss = (
-                class_loss_fn(y_true, y_pred)
-                + sum(katakana_classifier.losses) # reg loss
-                + recon_loss_fn(img, recon) * recon_coef
+            class_loss, reg_loss, recon_loss = (
+                class_loss_fn(y_true, y_pred),
+                sum(katakana_classifier.losses),
+                recon_loss_fn(img, recon) * recon_coef
             )
+            loss = class_loss + reg_loss + recon_loss
 
         grads = tape.gradient(
             loss,
@@ -158,7 +160,7 @@ def train(
         )
         katakana_loss_metric.update_state(y_true, y_pred)
 
-        return loss
+        return loss, class_loss, reg_loss, recon_loss
     
 
     @tf.function
@@ -205,9 +207,19 @@ def train(
             katakana_loss_metric.reset_state()
         for step, (hiragana_img, katakana_img, label) in enumerate(train_dataset):
             if train_hiragana:
-                hiragana_loss = hiragana_classifier_train_step(hiragana_img, label, recon_reg_coef)
+                (
+                    hiragana_loss,
+                    hiragana_class_loss,
+                    hiragana_reg_loss,
+                    hiragana_recon_loss
+                ) = hiragana_classifier_train_step(hiragana_img, label, recon_reg_coef)
             if train_katakana:
-                katakana_loss = katakana_classifier_train_step(katakana_img, label, recon_reg_coef)
+                (
+                    katakana_loss,
+                    katakana_class_loss,
+                    katakana_reg_loss,
+                    katakana_recon_loss
+                ) = katakana_classifier_train_step(katakana_img, label, recon_reg_coef)
             
             # Log metrics
             if step % 10 == 0:
@@ -216,12 +228,24 @@ def train(
                         f"Epoch Loss on hiragana classifier: {hiragana_loss_metric.result():.4f}"
                         " --- "
                         f"Batch Loss on hiragana classifier: {hiragana_loss:.4f}"
+                        " --- "
+                        f"Batch Class Loss on hiragana classifier: {hiragana_class_loss:.4f}"
+                        " --- "
+                        f"Batch Reg Loss on hiragana classifier: {hiragana_reg_loss:.4f}"
+                        " --- "
+                        f"Batch Recon Loss on hiragana classifier: {hiragana_recon_loss:.4f}"
                     )
                 if train_katakana:
                     print(
                         f"Epoch Loss on katakana classifier: {katakana_loss_metric.result():.4f}"
                         " --- "
                         f"Batch Loss on katakana classifier: {katakana_loss:.4f}"
+                        " --- "
+                        f"Batch Class Loss on katakana classifier: {katakana_class_loss:.4f}"
+                        " --- "
+                        f"Batch Reg Loss on katakana classifier: {katakana_reg_loss:.4f}"
+                        " --- "
+                        f"Batch Recon Loss on katakana classifier: {katakana_recon_loss:.4f}"
                     )
 
         # VALIDATION LOOP
