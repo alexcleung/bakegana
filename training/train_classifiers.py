@@ -100,7 +100,7 @@ def train(
     # Wrap the training steps in tf.function for performance
 
     @tf.function
-    def hiragana_classifier_train_step(img, lbl):
+    def hiragana_classifier_train_step(img, lbl, recon_coef):
         """
         Training Step for Hiragana Classifier 
         """
@@ -112,7 +112,7 @@ def train(
             loss = (
                 class_loss_fn(y_true, y_pred)
                 + sum(hiragana_classifier.losses) # reg loss
-                + recon_loss_fn(img, recon) * recon_reg_coef
+                + recon_loss_fn(img, recon) * recon_coef
             )
 
         grads = tape.gradient(
@@ -131,7 +131,7 @@ def train(
     
 
     @tf.function
-    def katakana_classifier_train_step(img, lbl):
+    def katakana_classifier_train_step(img, lbl, recon_coef):
         """
         Training Step for Katakana Classifier 
         """
@@ -143,7 +143,7 @@ def train(
             loss = (
                 class_loss_fn(y_true, y_pred)
                 + sum(hiragana_classifier.losses) # reg loss
-                + recon_loss_fn(img, recon) * recon_reg_coef
+                + recon_loss_fn(img, recon) * recon_coef
             )
 
         grads = tape.gradient(
@@ -205,9 +205,9 @@ def train(
             katakana_loss_metric.reset_state()
         for step, (hiragana_img, katakana_img, label) in enumerate(train_dataset):
             if train_hiragana:
-                hiragana_loss = hiragana_classifier_train_step(hiragana_img, label)
+                hiragana_loss = hiragana_classifier_train_step(hiragana_img, label, recon_reg_coef)
             if train_katakana:
-                katakana_loss = katakana_classifier_train_step(katakana_img, label)
+                katakana_loss = katakana_classifier_train_step(katakana_img, label, recon_reg_coef)
             
             # Log metrics
             if step % 10 == 0:
