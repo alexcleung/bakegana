@@ -129,6 +129,15 @@ if __name__ == "__main__":
             help="Type of input character image. h for hiragana, k for katakana"
         )
 
+        vis_parser.parse_known_args(namespace=args)
+
+        # Load the config from the model.
+        with open(
+            os.path.join(config["config_save_path"], args.model_version, "config.yaml"),
+            "r"
+        ) as stream:
+            config = yaml.safe_load(stream)
+
         visualize_capsules(
             config,
             model_version=args.model_version,
