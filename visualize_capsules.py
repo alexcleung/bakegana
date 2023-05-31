@@ -68,8 +68,7 @@ def visualize_capsules(config: Dict, model_version: str, filepath: str, kana_typ
         
         pred_rep = tf.squeeze(pred_rep, axis=0).numpy() # num_capsule, dim_capsule
 
-        heatmap_image = (pred_rep.get_array()-pred_rep.get_clim()[0])/(pred_rep.get_clim()[1]-pred_rep.get_clim()[0])
-        heatmap_image = Image.fromarray(np.uint8(pred_rep.get_cmap()(heatmap_image) * 255))
+        heatmap_image = (pred_rep - pred_rep.min())/(pred_rep.max() - pred_rep.min()) * 255
         
         Image.fromarray(input_img).convert('RGB').save(f"input_{i}.png")
-        Image.fromarray(heatmap_image).convert('RGB').save(f"heatmap_{i}.png")
+        Image.fromarray(heatmap_image).resize((heatmap_image.shape[1]*10, heatmap_image.shape[0]*10)).convert('RGB').save(f"heatmap_{i}.png")
