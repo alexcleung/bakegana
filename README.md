@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-<h1> BAKEGANA: Japanese character generation from unpaired data </h1>
+<h1> BAKEGANA: Japanese character translation from unpaired data </h1>
 </p>
 
 
