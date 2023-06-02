@@ -10,6 +10,10 @@
 Using a dual learning framework to generate hiragana images from katakana, and katakana images from hiragana.
 
 <p align="center">
+  <img width="986" height="600" src="media/generations.jpg">
+</p>
+
+<p align="center">
   <img width="1000" height="339" src="media/training framework.jpg">
 </p>
 
